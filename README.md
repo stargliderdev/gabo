@@ -9,5 +9,5 @@ Pesquisa por ISBN na wook.pt e descarega a informação sem necessidade de confi
 <li>Data de edição.</li>
 <li>Filtro por autores</li>
 <li>Cotas/Locais</li>	
-</ul>
+</ul><br>
 ![Screenshot](screenshots/sc1.png)
