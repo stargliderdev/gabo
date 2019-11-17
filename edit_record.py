@@ -1,7 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import sys
-
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QTabWidget, QLabel, QCheckBox, QVBoxLayout, QLineEdit, QComboBox, QDateEdit, \
     QWidget, QDialog, QHBoxLayout, QToolButton, QPushButton, QTextEdit, QMessageBox, QPlainTextEdit,QTextBrowser
@@ -13,7 +11,7 @@ import parameters as pa
 import dmPostgreSQL as dbmain
 import data_access as data_access
 import missing_data
-from qlib import addVLayout,setSize,addHLayout,HLine
+from qlib import setSize,addHLayout,HLine
 import tag_browser
 import stdio
 

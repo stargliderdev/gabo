@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
         print('loading datasets...')
         self.status = ['Todos']
         self.types = ['Todos']
-        gl.db_params = stdio.read_config_file('livros.ini')
+        gl.db_params = stdio.read_config_file('gabo.ini')
         if not gl.db_params[0]:
             QMessageBox.critical(None,
                                  "Erro Fatal",
@@ -66,7 +66,6 @@ class MainWindow(QMainWindow):
         self.status.extend(gl.dsStatus)
         self.types.extend(gl.ds_types)
         self.resize(1200, 768)
-        
         self.center()
         gl.DEBUG = True
         QApplication.setStyle(QStyleFactory.create('Fusion'))
@@ -74,11 +73,7 @@ class MainWindow(QMainWindow):
                          'ISBN': 'livros.pu_isbn', 'Cota/Local': 'livros.pu_cota',
                          'Tipos': ' livros.pu_type ',
                          'Volume': 'livros.pu_volume', 'Ano': 'livros.pu_ed_year, livros.pu_volume '}
-        
-        self.statusLabel1 = QLabel()
-        self.statusLabel1.setText('Versão ' + gl.VERSION)
-        
-        
+                
         mainLayout = QVBoxLayout(self.centralwidget)
         # barra de pesquisa
         
@@ -243,7 +238,6 @@ class MainWindow(QMainWindow):
         self.grid.setContextMenuPolicy(2)  # Qt.ActionsContextMenu)
         
         self.last_records_click()
-        mainLayout.addWidget(self.statusLabel1)
         try:
             if GetSystemMetrics(1) <= 768:
                 self.showMaximized()
@@ -501,7 +495,6 @@ class MainWindow(QMainWindow):
         self.data_set = dbmain.query_many(foo)
         gl.records_in_ds = len(self.data_set)
         self.update_grid()
-        self.statusLabel1.setText('Registos encontrados:' + str(gl.records_in_ds))
     
     def search_field_mode_click(self):
         gl.records_in_ds = 0
@@ -515,8 +508,7 @@ class MainWindow(QMainWindow):
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
-            self.statusLabel1.setText('Registos encontrados:' + str(gl.records_in_ds))
-            
+           
     
     def search_tags_mode_click(self):
         if not self.tags_to_searchEdit.text() == '':
@@ -527,7 +519,6 @@ class MainWindow(QMainWindow):
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
-            self.statusLabel1.setText('Registos encontrados:' + str(len(self.data_set)))
    
     def record_add_ISBN_click(self):
         form = input_isbn.InputIsbn()
@@ -557,7 +548,6 @@ class MainWindow(QMainWindow):
           livros.pu_title ASC LIMIT 50;'''
         a = dbmain.query_many(sql)
         self.data_set = a  # é global para que possa ser utilizado nos relatorios em html
-        self.statusLabel1.setText('Registos encontrados:' + str(len(self.data_set)))
         return self.data_set
     
     def grid_double_click(self):
