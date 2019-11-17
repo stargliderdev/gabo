@@ -15,4 +15,3 @@ setup(name="livros",
       version="2.0",
       description="Livros",
       executables=[Executable("main.py", base="Win32GUI", targetName="livros.exe",icon='books.ico')])
-# executables = [Executable("main.py",base='Win32Gui')])

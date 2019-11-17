@@ -1,12 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import os
 import datetime
 from random import randrange
-# import urllib.request, urllib.error, urllib.parse
 from operator import itemgetter
-
 
 def read_config_file(file_name):
     lines = []
@@ -22,7 +19,6 @@ def read_config_file(file_name):
         print ('erro ao ler ini')
         return False, {}
 
-
 def ini_file_to_dic(lines):
     dic = {}
     if not lines == []:
@@ -35,9 +31,7 @@ def ini_file_to_dic(lines):
         dic['error'] = False
     else:
         dic['error'] = True
-    
     return dic
-
 
 def read_file(file_name, mode=1):
     try:
@@ -52,20 +46,16 @@ def read_file(file_name, mode=1):
             elif mode == 3:
                 # OR read one line at a time.
                 toto = f.readline()
-        
         finally:
             f.close()
     except IOError:
         toto = 'error ao carregar ficheiro:' + file_name
-    
     return toto
-
 
 def log_write(file_name, content):
     d = datetime.datetime.now().strftime("%Y.%b.%d %H:%M:%S")
     with open(file_name, "a") as myfile:
         myfile.write(d + ': ' + content + '\n')
-
 
 def wipe(path):
     with open(path, 'wb') as fout:
@@ -79,7 +69,6 @@ def int_format(number, sep=' '):
         s = s[:-3]
     return s + sep.join(reversed(groups))
 
-
 def float_format(number, sepi=' ', sepf=','):
     """ o dois é a precisão do numero flutuante """
     try:
@@ -89,7 +78,6 @@ def float_format(number, sepi=' ', sepf=','):
     except:
         return '0' + sepf + '00'
     return toto
-
 
 def sort_files_by_last_modified(files):
     """ Given a list of files, return them sorted by the last
@@ -101,7 +89,6 @@ def sort_files_by_last_modified(files):
     fileData = sorted(list(fileData.items()), key=itemgetter(1))
     return fileData
 
-
 def internet_on():
     try:
         response = urllib.request.urlopen('http://google.com', timeout=1)
@@ -109,12 +96,10 @@ def internet_on():
     except urllib.error.URLError as err: pass
     return False
 
-
 def delete_file(path, echo=False):
     if os.path.isfile(path):
         if echo:
             os.remove(path)
-
 
 def file_ok(file):
     if os.path.exists(file):
@@ -122,14 +107,12 @@ def file_ok(file):
     else:
         return False
 
-
 def dir_ok(path, create=True):
     if os.path.isdir(path):
         pass
     else:
         if create:
             os.makedirs(path)
-
 
 def last_file(path):
     files_by_date = sort_files_by_last_modified(path)
@@ -139,14 +122,12 @@ def last_file(path):
         toto = files_by_date[0][0]
     return toto
 
-
 def hashfile(afile, hasher, blocksize=65536):
     buf = afile.read(blocksize)
     while len(buf) > 0:
         hasher.update(buf)
         buf = afile.read(blocksize)
     return hasher.digest()
-
 
 def zip_file(filename):
     import gzip
@@ -157,7 +138,6 @@ def zip_file(filename):
     f_out.writelines(f_in)
     f_out.close()
     f_in.close()
-    
     if not file_ok(dum + '.gz'):
         os.rename(filename + '.gz', dum + '.gz', )
     return dum + '.gz'
@@ -195,11 +175,8 @@ def postgresql(data_params):
     print ('postgresql')
     print (data_params)
     print ('------end debug-------')
-        
-
     backup_file = make_file_name(data_params['db_database'], data_params['backup_dir'] )
     print('Fazendo backup do Postgresql')
-    
     print('Dest:',)
     exec_string = 'PGPASSWORD=\"' + data_params['db_password'] + '\"  pg_dump -h ' + data_params['db_host'] + ' -p 5432 -U root -Fc  -f ' \
                   + backup_file + ' ' + data_params['db_database']
@@ -218,10 +195,4 @@ def remove_duplicates(values):
 
 
 if __name__ == '__main__':
-    authors_process('simon riggs; hannu krosing & toine da cadela')
-    authors_process('simon riggs; hannu krosing ; toine da cadela')
-    authors_process('simon riggs & hannu krosing , toine da cadela')
-    authors_process('simon riggs&hannu krosing,toine da cadela')
-    authors_process('simon riggs;hannu krosing,toine da cadela')
-    
-    
+    pass

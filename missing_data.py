@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import  QVBoxLayout, QDialog, QButtonGroup, QPushButton, QTextEdit
 
-
 class DadosWizard(QDialog):
     def __init__(self, text_message,options,parent = None):
         super(DadosWizard,   self).__init__(parent)
@@ -48,9 +47,6 @@ class DadosWizard(QDialog):
             return ''
         else:
             return dum
-def main():
-    pass
 
 if __name__ == '__main__':
-
-    main()
+    pass

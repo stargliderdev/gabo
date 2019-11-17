@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
 import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, time
 from bs4 import BeautifulSoup
-import string
-import parameters as param
-
 
 def parse_wook(url):
     book_data = {}
@@ -18,31 +14,14 @@ def parse_wook(url):
         print("Error in parseWook ", detail)
         book_data['pu_title']='Error in parseWok'
         book_data['pu_sinopse']=str(detail)
-
         return True, book_data
-
-    
     soup = BeautifulSoup(the_page, "lxml")
-    
     toto = soup.find('div', {'id': 'productPageSectionDetails-collapseDetalhes-content-title'})
-    # bookData['pu_title']= get_data_wook(toto)
     book_data['pu_title'] = get_data_wook(toto)
-    # print 'titulo:',titulo
-    # bookData['pu_title'] = titulo[titulo.find('">')+2:titulo.rfind('</h1')]
-    # print '------------------'
     toto = soup.find('div', {'id': 'productPageSectionDetails-collapseDetalhes-content-author'})
-    # print 'Autor  ',get_autor(toto)
     book_data['pu_author'] = get_autor(toto)
-    # print '------------------'
-    # bookData['pu_title']
-    # bookData['pu_author_id'] = get_data_wook(toto,';"', '</a').replace('>', '').strip()
-    
-    
-    # toto = soup.find('div', {'class': 'tabbertab'}) #sinopse
     toto = soup.find('div', {'id': 'productPageSectionAboutBook-sinopse'})
-    # print 'descricao', get_desc(toto)
     a = str(get_data_wook(toto,'cr"', '</di'))
-    
     tag = 'itemprop="description"'
     p1 = a.find(tag) + len(tag)
     a = a.replace('<p>','')
@@ -74,7 +53,6 @@ def get_autor(a):
     return a[b:c]
 
 def get_desc(a):
-   
     a = str(a).encode('utf-8')
     b = a.rfind('">')
     c = a.rfind('</p')  
@@ -102,8 +80,6 @@ def get_data(a):
     tag = 'itemprop="isbn">'
     p1 = a.find(tag)
     p2 = a.find('<',p1) #a[p1: len(tag)]
-    # print(p1, p2, len(tag))
-    # print(a[p1+len(tag): p2])
     hl['isbn'] = a[p1+len(tag): p2]
     p1 = p2
     tag = 'itemprop="datePublished">'
@@ -135,21 +111,10 @@ def get_data(a):
     p1 = a.find(tag, p1) + len(tag)
     p2 = a.find('<', p1)
     hl['pu_pages'] = a[p1: p2]
-   
     return hl
 
 def get_ano(a):
     return str(a)
-
-def main():
-    #'http://www.bertrand.pt/ficha/terra-abencoada?id=11462775'
-    #'http://www.wook.pt/ficha/terra-abencoada/a/id/11462775'
-
-    # parse_wook('https://www.wook.pt/pesquisa/9789723801965')
-    import pprint
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(parse_wook('https://www.wook.pt/pesquisa/9789897225130'))
-
-    
+ 
 if __name__ == '__main__':
-    main()
+    pass
