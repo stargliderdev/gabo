@@ -35,10 +35,8 @@ class EditRecord(QDialog):
         self.tabuladorTabWidget = QTabWidget()
         self.makeTab2()
         self.makeTab4()
-        
         self.tabuladorTabWidget.addTab(self.tab4, 'Etiquetas')
         self.tabuladorTabWidget.addTab(self.tab2, 'Observações')
-        
         mainLayout.addLayout(self.buttonsLayout)
         mainLayout.addWidget(HLine())
         mainLayout.addLayout(self.titleLayout)
@@ -46,7 +44,6 @@ class EditRecord(QDialog):
         
         if self.id == -1:
             self.item_data = -1
-            # self.setWindowTitle('Adiciona ' + pa.pub_type_name)
             self.record_add()
             if isbn:
                 self.add_from_isbn(data)
@@ -88,7 +85,8 @@ class EditRecord(QDialog):
         self.pu_ed_year.setMaximumWidth(60)
         self.pu_ed_year.setMaxLength(4)
         
-        self.titleLayout.addLayout(addHLayout(['Titulo:', self.pu_title,titleCapitalize, 'Volume\Ano:', self.pu_volume, self.pu_ed_year]))
+        self.titleLayout.addLayout(addHLayout(['Titulo:', self.pu_title,titleCapitalize]))
+        self.titleLayout.addLayout(addHLayout(['Volume:', self.pu_volume, 'Ano',self.pu_ed_year, True]))
         self.pu_sub_title = QLineEdit()
         self.pu_sub_title.setMaxLength(255)
         subTitleCapitalize = QToolButton()
