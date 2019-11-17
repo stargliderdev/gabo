@@ -508,28 +508,18 @@ class EditRecord(QDialog):
     def fill_defaults(self):
         if str(self.pu_author_id.currentText().strip()) == '':
             self.pu_author_id.setEditText('Sem Autor')
-        
         if str(self.pu_subject.currentText().strip()) == '':
             self.pu_subject.setEditText('Não Defenido')
-        
         if str(self.pu_translator.currentText().strip()) == '':
             self.pu_translator.setEditText('Sem Tradutor')
-        
         if str(self.pu_type.currentText().strip()) == '':
             self.pu_type.setEditText('Não Defenido')
-        
         if str(self.pu_media.currentText().strip()) == '':
             self.pu_media.setEditText('Não Defenido')
-        
         if str(self.pu_collection.currentText().strip()) == '':
             self.pu_collection.setEditText('Não Defenido')
-        
-        if str(self.pu_media.currentText().strip()) == '':
-            self.pu_media.setEditText('Não Defenido')
-        
         if str(self.pu_media_format.currentText().strip()) == '':
             self.pu_media_format.setEditText('Não Defenido')
-        
         if str(self.pu_editor_id.currentText().strip()) == '':
             self.pu_editor_id.setEditText('Não Defenido')
     
