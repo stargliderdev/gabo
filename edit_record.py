@@ -450,7 +450,7 @@ class EditRecord(QDialog):
     def record_add(self):
         self.stored = False
         self.update_combo_boxes()
-        self.init_registo()
+        self.init_record()
         self.btnDuplica.setDisabled(True)
     
     def record_clone(self):
@@ -533,17 +533,20 @@ class EditRecord(QDialog):
         if str(self.pu_editor_id.currentText().strip()) == '':
             self.pu_editor_id.setEditText('Não Defenido')
     
-    def init_registo(self):
+    def init_record(self):
         self.item_data = -1
         self.pu_title.setText('')
         self.pu_sub_title.setText('')
         self.pu_isbn.setText('')
         self.pu_cota.setText('')
         self.pu_author_id.setEditText('')
+        self.pu_ed_year.clear()
         self.tags.setText('')
         self.tags_stack = ''
         self.pu_volume.setText('1')
-    
+        self.pu_sinopse.clear()
+        self.pu_obs.clear()
+        
     def duplicar_registo(self):
         self.item_data = -1
         self.pu_title.setText('')
