@@ -28,7 +28,6 @@ class BrowserLocals(QDialog):
         changeBtn.clicked.connect(self.change_locals_click)
         exit_btn=QPushButton('Sair')
         exit_btn.clicked.connect(self.exit_click)
-        
         valid_btn=QPushButton('Valida')
         valid_btn.clicked.connect(self.valid_click)
         masterLayout.addLayout(qc.addHLayout(['Da cota:', self.fromEdt, 'Para a cota:', self.toEdt, changeBtn]))
