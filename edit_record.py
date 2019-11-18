@@ -192,7 +192,6 @@ class EditRecord(QDialog):
         tab3Layout = QVBoxLayout()
         self.pu_sinopse = QTextEdit()
         tab3Layout.addWidget(self.pu_sinopse)
-        
         mainTab3Layout.addLayout(tab3Layout)
     
     def makeTab4(self):
@@ -209,8 +208,10 @@ class EditRecord(QDialog):
         editTags = QToolButton()
         editTags.setText('Edita Etiquetas')
         editTags.clicked.connect(self.edit_tags_click)
+        sizesTBtn = QToolButton()
+        sizesTBtn.clicked.connect(self.show_sizes_click)
         self.pu_sinopse = QTextEdit()
-        tab4Layout.addLayout(addHLayout([addTags, editTags, True]))
+        tab4Layout.addLayout(addHLayout([addTags, editTags,True,sizesTBtn]))
         tab4Layout.addWidget(self.tags)
         tab4Layout.addWidget(self.pu_sinopse)
         mainTab4Layout.addLayout(tab4Layout)
@@ -498,9 +499,12 @@ class EditRecord(QDialog):
                 pass
             else:
                 self.tags.setHtml('<font color="blue"><strong>' + form.tag_list)
+
+    def show_sizes_click(self):
+        pass
     
     def procField(self, aString):
-        if aString == None:
+        if aString is None:
             return ''
         else:
             return aString
