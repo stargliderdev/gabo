@@ -14,8 +14,8 @@ def addRecord2Table(table, field, value, type_field):
 
 def get_types():
     a = dbmain.query_many('select ty_id,ty_name from types  ')
-    gl.types_dict ={}   #{u'Ficção':1, 'Romance':2, 'Ensaio':3, 'Técnico':4}
-    gl.ds_types = [] #[u'Ficção', u'Romance', u'Ensaio', u'Técnico'])
+    gl.types_dict ={}
+    gl.ds_types = []
     for n in a:
         gl.types_dict[n[1].lower()] = n[0]
         gl.ds_types.append(n[1])
@@ -208,6 +208,14 @@ def get_params():
 def save_param(k_name, k_data):
     dbmain.execute_query('update params set param_data=%s where param_key=%s', (k_data,k_name))
     
+
+def get_areas():
+    a = dbmain.query_many('''select distinct pu_cota from livros WHERE pu_cota IS NOT NULL and pu_cota  <>'' order by pu_cota''')
+    gl.ds_areas = []
+    for n in a:
+        gl.ds_areas.append(n[0])
+    
+
     
 if __name__ == "__main__":
     pass

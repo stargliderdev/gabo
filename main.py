@@ -62,6 +62,7 @@ class MainWindow(QMainWindow):
         data_access.get_types()
         data_access.get_params()
         data_access.load_preps()
+        data_access.get_areas()
         print('ending loading datasets!')
         self.status.extend(gl.dsStatus)
         self.types.extend(gl.ds_types)
