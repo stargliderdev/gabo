@@ -23,9 +23,6 @@ class InputIsbn(QDialog):
         masterLayout.addLayout(qlib.addHLayout(['ISBN', self.isbn]))
         self.outputPlainText = QTextEdit()
         masterLayout.addWidget(self.outputPlainText)
-        # self.searchWhereComboBox = QComboBox()
-        # self.searchWhereComboBox.addItems(['Wook','ISBN Search'])
-        # masterLayout.addLayout(qlib.addHLayout(['Procurar em', self.searchWhereComboBox, True]))
         self.fill_date_CB = QCheckBox('O Ano é igual á data de edição')
         self.addAuthorChk = QCheckBox('Adiciona autor como etiqueta')
         self.addAuthorChk.setCheckState(2)
@@ -66,7 +63,8 @@ class InputIsbn(QDialog):
                 self.outputPlainText.setText('este ISBN já existe')
                 self.outputPlainText.repaint()
         else:
-            self.get_isbn(tx) # wook
+            # wook
+            self.get_isbn(tx)
 
     def get_isbn(self, tx):
         xl = {}

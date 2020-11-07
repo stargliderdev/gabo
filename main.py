@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
         data_access.get_params()
         data_access.load_preps()
         data_access.get_areas()
+        data_access.get_special_tags()
         print('ending loading datasets!')
         self.status.extend(gl.dsStatus)
         self.types.extend(gl.ds_types)
@@ -85,21 +86,21 @@ class MainWindow(QMainWindow):
         self.fieldToSearchCbox.addItems(['Autor', 'Titulo', 'ISBN', 'Cota/Local'])
         self.fieldToSearchCbox.setCurrentIndex(1)
         
-        self.string_to_searchEdit = QLineEdit()
-        self.string_to_searchEdit.setMaximumWidth(300)
-        self.string_to_searchEdit.setMinimumWidth(300)
+        self.authorToSearchEdt = QLineEdit()
+        self.authorToSearchEdt.setMaximumWidth(300)
+        self.authorToSearchEdt.setMinimumWidth(300)
 
-        searchButton = QToolButton()
-        searchButton.setToolTip('Pesquisa texto')
-        searchButton.setIcon(QIcon('./img/search.png'))
-        self.set_icon_size(searchButton)
-        searchButton.clicked.connect(self.search_field_mode_click)
+        searchauthorBtn = QToolButton()
+        searchauthorBtn.setToolTip('Pesquisa texto')
+        searchauthorBtn.setIcon(QIcon('./img/search.png'))
+        self.set_icon_size(searchauthorBtn)
+        searchauthorBtn.clicked.connect(self.search_field_mode_click)
         
-        clearSearchBtn = QToolButton()
-        clearSearchBtn.setToolTip('Limpa Pesquisa')
-        clearSearchBtn.setIcon(QIcon('./img/clear.png'))
-        self.set_icon_size(clearSearchBtn)
-        clearSearchBtn.clicked.connect(self.clear_field_search)
+        clearAuthorSearchBtn = QToolButton()
+        clearAuthorSearchBtn.setToolTip('Limpa Pesquisa')
+        clearAuthorSearchBtn.setIcon(QIcon('./img/clear.png'))
+        self.set_icon_size(clearAuthorSearchBtn)
+        clearAuthorSearchBtn.clicked.connect(self.clear_field_search)
         search_tags_Btn = QToolButton()
         search_tags_Btn.setToolTip('Pesquisa tags')
         search_tags_Btn.setIcon(QIcon('./img/search_tags.png'))
@@ -206,7 +207,7 @@ class MainWindow(QMainWindow):
             [bookAddBtn, bookAddIsbnBtn, self.last_fiveBtn, authors_Btn, cotas_Btn, double1_Btn, clone_Btn, toolsBtn,printBtn, True,
               aboutBtn, closeBtn]))
         mainLayout.addLayout(qlib.addHLayout(
-            [self.fieldToSearchCbox, self.string_to_searchEdit, searchButton, clearSearchBtn, 'Ordena:',
+            [self.fieldToSearchCbox, self.authorToSearchEdt, searchauthorBtn, clearAuthorSearchBtn, 'Ordena:',
              self.sortByCbox,
              True, 'Tipos', self.types_filterCbox, 'Estado', self.status_filterCbox, True]))
         
@@ -218,15 +219,15 @@ class MainWindow(QMainWindow):
         self.grid = QTableWidget(self)
         self.grid.setSelectionBehavior(QTableWidget.SelectRows)
         self.grid.setSelectionMode(QTableWidget.SingleSelection)
-        
         self.grid.setEditTriggers(QTableWidget.NoEditTriggers)
         self.grid.verticalHeader().setDefaultSectionSize(20)
         self.grid.setAlternatingRowColors(True)
         self.grid.verticalHeader().setVisible(False)
+        self.grid.setStyleSheet("alternate-background-color: #d2e5ff;")
         self.grid.doubleClicked.connect(self.grid_double_click)
         
         mainLayout.addWidget(self.grid)
-        self.string_to_searchEdit.returnPressed.connect(self.filter_click)
+        self.authorToSearchEdt.returnPressed.connect(self.filter_click)
         self.fieldToSearchCbox.setCurrentIndex(1)
         # sub menus
         author_pub = QAction("Obras do Autor", self)
@@ -255,14 +256,14 @@ class MainWindow(QMainWindow):
     
     def author_pub_click(self):
         a = self.grid.item(self.grid.currentRow(), 2).text()
-        self.string_to_searchEdit.setText(a)
+        self.authorToSearchEdt.setText(a)
         self.fieldToSearchCbox.setCurrentIndex(0)
         self.filter_click()
     
     def local_pub_click(self):
         try:
             a = self.grid.item(self.grid.currentRow(), 5).text()
-            self.string_to_searchEdit.setText(a)
+            self.authorToSearchEdt.setText(a)
             self.fieldToSearchCbox.setCurrentIndex(3)
             self.filter_click()
         except AttributeError:
@@ -273,12 +274,11 @@ class MainWindow(QMainWindow):
         form.exec_()
         if not form.tag_list == []:
             self.tags_to_searchEdit.setText(form.tag_list)
-            self.string_to_searchEdit.clear()
+            self.authorToSearchEdt.clear()
     
     def double1_click(self):
         # duplica normal
         if self.grid.item(self.grid.currentRow(), 0) is not None:
-            print('duplica')
             form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', isbn=False, copy=1)
             form.exec_()
             self.refresh_grid()
@@ -295,7 +295,7 @@ class MainWindow(QMainWindow):
         form.exec_()
         if form.toto != '':
             self.fieldToSearchCbox.setCurrentIndex(0)
-            self.string_to_searchEdit.setText(form.toto)
+            self.authorToSearchEdt.setText(form.toto)
             self.search_field_mode_click()
     
     def locals_click(self):
@@ -326,7 +326,7 @@ class MainWindow(QMainWindow):
     def last_records_click(self):
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
         self.fieldToSearchCbox.setCurrentIndex(1)
-        self.string_to_searchEdit.setText('')
+        self.authorToSearchEdt.setText('')
         self.tags_to_searchEdit.setText('')
         self.types_filterCbox.setCurrentIndex(0)
         sql = '''SELECT
@@ -361,8 +361,7 @@ class MainWindow(QMainWindow):
 
     def show_delete_click(self):
         sql = '''SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome, livros.pu_cota, livros.pu_volume
-        FROM livros, authors, types, status
-        WHERE'''
+        FROM livros, authors, types, status  WHERE'''
         sql += ' livros.pu_author_id =0 and livros.pu_type > 0 and livros.pu_status > 0 and '
         sql += '''  livros.pu_status = status.st_id AND
           authors.au_id = livros.pu_author_id AND
@@ -405,13 +404,13 @@ class MainWindow(QMainWindow):
         limit_ = ''
     
         self.key_sort = self.sort_dic[self.sortByCbox.currentText()]
-        if not self.string_to_searchEdit.text() == '':
+        if not self.authorToSearchEdt.text() == '':
             self.recordLimitEdt.setText('0')
             self.key_search = self.sort_dic[self.fieldToSearchCbox.currentText()]
             if self.fieldToSearchCbox.currentIndex() == 3: # na cota tem de ser exactamente igual
-                text_to_search = "\'" + self.string_to_searchEdit.text().lower().strip() + "\'"
+                text_to_search = "\'" + self.authorToSearchEdt.text().lower().strip() + "\'"
             else:
-                text_to_search = "\'%" + self.string_to_searchEdit.text().lower().strip() + "%\'"
+                text_to_search = "\'%" + self.authorToSearchEdt.text().lower().strip() + "%\'"
             
             if len(text_to_search) > 1:
                 where_ += '''unaccent(lower(''' + self.key_search + ''')) LIKE  unaccent(''' + text_to_search + ''') AND '''
@@ -499,7 +498,7 @@ class MainWindow(QMainWindow):
     
     def search_field_mode_click(self):
         gl.records_in_ds = 0
-        if not self.string_to_searchEdit.text() == '':
+        if not self.authorToSearchEdt.text() == '':
             # self.filter_click()
             sql = self.make_sql()
             self.data_set = dbmain.query_many(sql)
@@ -513,7 +512,7 @@ class MainWindow(QMainWindow):
     
     def search_tags_mode_click(self):
         if not self.tags_to_searchEdit.text() == '':
-            self.string_to_searchEdit.setText('')
+            self.authorToSearchEdt.setText('')
             sql = self.make_sql()
             self.data_set = dbmain.query_many(sql)
             if len(self.data_set) == 0:
@@ -555,7 +554,7 @@ class MainWindow(QMainWindow):
         stack_current_row =self.grid.currentRow()
         form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', isbn=False)
         form.exec_()
-        if not self.string_to_searchEdit.text() == '':
+        if not self.authorToSearchEdt.text() == '':
             self.recordLimitEdt.setText('999')
             foo = self.make_sql()
             self.data_set = dbmain.query_many(foo)
@@ -572,7 +571,7 @@ class MainWindow(QMainWindow):
         pass
     
     def clear_field_search(self):
-        self.string_to_searchEdit.clear()
+        self.authorToSearchEdt.clear()
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
         self.last_records_click()
         # self.update_grid(self.get_data())
@@ -642,6 +641,5 @@ def main():
     form = MainWindow()
     form.show()
     app.exec_()
-
 
 main()

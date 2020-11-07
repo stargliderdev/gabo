@@ -8,9 +8,7 @@ import qlib
 
 def ex_grid_update(grid_ctrl, col, data=[], refresh=False, hidden=-1):
     def format_as_integer(d):
-        # d = dado
         item = QTableWidgetItem()
-        
         item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
         item.setText(str(d))
         return item
@@ -18,16 +16,11 @@ def ex_grid_update(grid_ctrl, col, data=[], refresh=False, hidden=-1):
     def format_as_string(d):
         # d = dado
         item = QTableWidgetItem()
-        
-        # item.setTextAlignment(Qt.AlignRight)
         item.setText(d)
         return item
     
     def format_as_date(d):
-        # d = dado
         item = QTableWidgetItem()
-        
-        # item.setTextAlignment(Qt.AlignRight)
         item.setText(d.strftime('%d.%b.%Y'))
         return item
     
@@ -84,18 +77,13 @@ def ex_grid_update(grid_ctrl, col, data=[], refresh=False, hidden=-1):
 
 def ex_grid__ctrl_update(grid_ctrl, col_dict, data=[], options=[]):
     def format_as_integer(d):
-        # d = dado
         item = QTableWidgetItem()
-        
         item.setTextAlignment(Qt.AlignRight)
         item.setText(str(d))
         return item
     
     def format_as_string(d):
-        # d = dado
         item = QTableWidgetItem()
-        
-        # item.setTextAlignment(Qt.AlignRight)
         item.setText(d.decode('utf-8'))
         return item
     
@@ -120,7 +108,6 @@ def ex_grid__ctrl_update(grid_ctrl, col_dict, data=[], options=[]):
     col_type = []
     field_index = {}
     for k, v in col_dict.items():
-        # print v
         headers.append(v[0])
         col_type.append(v[1])
         field_index[k] = v[2]
@@ -143,7 +130,6 @@ def ex_grid__ctrl_update(grid_ctrl, col_dict, data=[], options=[]):
             elif col_type[f] == 'sc':
                 grid_ctrl.setItem(lin, f, format_as_string_center(n[field_index[f]]))
             elif col_type[f] == 'xb':  # checkbox
-                # grid_ctrl.setItem(lin, ' ', QCheckBox())
                 grid_ctrl.setCellWidget(lin, f, qlib.checkBoxGrid())
         lin += 1
     grid_ctrl.resizeColumnsToContents()
@@ -163,8 +149,4 @@ def export_grid_to_csv(grid_ctrl):
 
 
 if __name__ == '__main__':
-    print('não corre')
-    # for linha in range(0, self.grid_1.rowCount()):
-    # if self.grid_1.cellWidget(linha, 1) is not None:
-    #     if self.grid_1.cellWidget(linha, 1).layout().itemAt(1).widget().isChecked():
-    #         tags_1.append(unicode(self.grid_1.item(linha, 2).text()))
+    pass

@@ -20,3 +20,5 @@ VERSION = '17-11-2019'
 OWNER = ''
 prep_set = set()
 prep_dict = {}
+tag_special_list = []
+tag_special_dict = {}

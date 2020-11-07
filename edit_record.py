@@ -20,7 +20,7 @@ class EditRecord(QDialog):
     def __init__(self,id,data,isbn=True,copy=0,parent=None):
         super(EditRecord, self).__init__(parent)
         self.setWindowTitle('Edita Livros')
-        self.resize(800, 600)
+        self.resize(1024, 768)
         self.error_list = []
         pa.userError = ''
         self.toto = False
@@ -112,7 +112,7 @@ class EditRecord(QDialog):
         typeToTagBtn = QToolButton()
         setSize(typeToTagBtn)
         typeToTagBtn.setIcon(QIcon('./img/green.png'))
-        typeToTagBtn.setToolTip('Adiciona tipo ás etiquetas')
+        typeToTagBtn.setToolTip('Adiciona tipo às etiquetas')
         typeToTagBtn.clicked.connect(self.add_type_to_tags)
         self.pu_cota = QLineEdit()
         self.pu_cota.setObjectName('pu_cota')
@@ -210,8 +210,13 @@ class EditRecord(QDialog):
         editTags.clicked.connect(self.edit_tags_click)
         sizesTBtn = QToolButton()
         sizesTBtn.clicked.connect(self.show_sizes_click)
+        specialTagsBtn = QToolButton()
+        specialTagsBtn.setText('Etiquetas Especiais')
+        specialTagsBtn.clicked.connect(self.edit_special_tags_click)
+        sizesTBtn = QToolButton()
+        sizesTBtn.clicked.connect(self.show_sizes_click)
         self.pu_sinopse = QTextEdit()
-        tab4Layout.addLayout(addHLayout([addTags, editTags,True,sizesTBtn]))
+        tab4Layout.addLayout(addHLayout([addTags, editTags,specialTagsBtn,True,sizesTBtn]))
         tab4Layout.addWidget(self.tags)
         tab4Layout.addWidget(self.pu_sinopse)
         mainTab4Layout.addLayout(tab4Layout)
@@ -261,7 +266,7 @@ class EditRecord(QDialog):
         tags_data.append((0, xl['pu_lang']))
         tags_data.append((0, xl['pu_media']))
         tags_data.append((0, 'pag:' + xl['pu_pages']))
-        tags_data.append((0, xl['pu_size']))
+        tags_data.append((0, 'dim:' + xl['pu_size']))
         
         form = tag_browser.EditRecordTags(tags_data)
         form.exec_()
@@ -280,7 +285,7 @@ class EditRecord(QDialog):
         t.append('data:' + data['pu_ed_date'])
         t.append('pag:' + data['pu_pages'])
         t.append(data['pu_media'].lower())
-        t.append(data['pu_size'])
+        t.append('dim:' + data['pu_size'])
         if data['tag_author']:
             t.append(data['pu_author'].lower())
         self.pu_author_id.setEditText(data['pu_author'])
@@ -500,6 +505,16 @@ class EditRecord(QDialog):
             else:
                 self.tags.setHtml('<font color="blue"><strong>' + form.tag_list)
 
+    def edit_special_tags_click(self):
+        tags_txt = self.tags.toPlainText().rstrip(',')
+        form = tag_browser.EditSpecialTags(tags_txt)
+        form.exec_()
+        if form.flag:
+            if form.tags_output == '':
+                pass
+            else:
+                self.tags.setHtml('<font color="blue"><strong>' + form.tags_output)
+
     def show_sizes_click(self):
         pass
     
@@ -717,18 +732,6 @@ def read_record(obj, field, dic):
         print('erro em def read_record()')
         print(str(e) + '\n ', obj.objectName(), '\nin field:', field, '\nin dic:', dic)
 
-#
-# def text_title(txt):
-#     a = txt.title()
-#     a = a.split(' ')
-#     bc = [a[0]]
-#     for n in range(1,len(a)):
-#         if a[n].lower() in pa.prep_set:
-#             bc.append(a[n].lower())
-#         else:
-#             bc.append(a[n])
-#     return ' '.join(bc)
-    
 
 def main():
     pass

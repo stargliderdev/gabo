@@ -197,9 +197,10 @@ def get_params():
     a = dbmain.query_many('select * from params')
     for n in a:
         if n[0] == 'LAST_TAGS':
-            dum = n[1].split(',')
+            toto = n[1].rstrip(',')
+            dum = toto.split(',')
             for f in dum:
-                gl.last_tags.append((0, f))
+                gl.last_tags.append(f)
         elif n[0] == 'SHOW_RECORDS':
             gl.SHOW_RECORDS = n[1]
         elif n[0] == 'OWNER':
@@ -208,6 +209,10 @@ def get_params():
 def save_param(k_name, k_data):
     dbmain.execute_query('update params set param_data=%s where param_key=%s', (k_data,k_name))
     
+def save_last_tags_params():
+    """input gl.LAST_TAGS"""
+    last_tags_string = ','.join(gl.last_tags)
+    dbmain.execute_query('update params set param_data=%s where param_key=%s', (last_tags_string,'LAST_TAGS'))
 
 def get_areas():
     a = dbmain.query_many('''select distinct pu_cota from livros WHERE pu_cota IS NOT NULL and pu_cota  <>'' order by pu_cota''')
@@ -215,6 +220,12 @@ def get_areas():
     for n in a:
         gl.ds_areas.append(n[0])
     
+def get_special_tags():
+    a = dbmain.query_many('''select tag_s_name, tag_s_key from tags_special order by tag_s_id''')
+    gl.tag_special_list = []
+    for n in a:
+        gl.tag_special_list.append((n[0], n[1]))
+        gl.tag_special_dict[n[1]] = n[0]
 
     
 if __name__ == "__main__":

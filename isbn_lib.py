@@ -127,7 +127,7 @@ def parse_wook(url):
         book_data['pu_ed_date'] = get_edition('id="productPageSectionDetails-collapseDetalhes-content-year"')
         book_data['pu_editor'] = get_editor('Editor:')
         book_data['pu_size']  = get_size('Dimensões:')
-        book_data['pu_lang'] = get_language('Idioma:')
+        book_data['pu_lang'] = get_language('Idioma:').strip()
         book_data['pu_media']  = get_value('Encadernação')
         book_data['pu_pages']  = get_value('Páginas')
         book_data['pu_theme'] = get_value('Temática')
