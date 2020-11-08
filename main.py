@@ -517,9 +517,7 @@ class MainWindow(QMainWindow):
             order_ = ''' ORDER BY ''' + self.key_sort + ' asc '
         else:
             self.recordLimitEdt.setText(gl.SHOW_RECORDS)
-            
             limit_ = 'LIMIT 99999'
-        
         return select_ + where_ + join_ + order_ + limit_
     
     def limit_change(self):
@@ -542,7 +540,6 @@ class MainWindow(QMainWindow):
         self.update_grid()
     
     def first_field_search_click(self):
-
         gl.records_in_ds = 0
         if not self.firstToSearchEdt.text() == '':
             # self.filter_click()
@@ -556,33 +553,26 @@ class MainWindow(QMainWindow):
                 self.update_grid()
            
     def second_field_search_click(self):
-
         gl.records_in_ds = 0
         if not self.secondToSearchEdt.text() == '':
-            # self.filter_click()
             sql = self.make_sql(self.secondToSearchEdt.text(), self.secondSearchCBox.currentText())
             self.data_set = dbmain.query_many(sql)
             gl.records_in_ds = len(self.data_set)
             if gl.records_in_ds == 0:
-                # self.grid.clear()
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
     
     def third_field_search_click(self):
-
         gl.records_in_ds = 0
         if not self.thirdToSearchEdt.text() == '':
-            # self.filter_click()
             sql = self.make_sql(self.thirdToSearchEdt.text(), self.thirdSearchCBox.currentText())
             self.data_set = dbmain.query_many(sql)
             gl.records_in_ds = len(self.data_set)
             if gl.records_in_ds == 0:
-                # self.grid.clear()
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
-    
     
     def search_tags_mode_click(self):
         if not self.tags_to_searchEdit.text() == '':
