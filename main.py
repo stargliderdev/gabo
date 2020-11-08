@@ -430,7 +430,6 @@ class MainWindow(QMainWindow):
          <img src="./info.png" ></p> <p>"""
         bc +="Versão " + gl.VERSION + '<br>'
         bc +="Utilizador " + gl.OWNER
-        
         bc +="""</p></html>"""
         form = mini_browser.BrowserView('SysInfo', bc)
         form.exec_()
@@ -449,11 +448,9 @@ class MainWindow(QMainWindow):
         limit_ = ''
         where_index = where_index.lower()
         self.key_sort = self.sort_dic[self.sortByCbox.currentText().lower()]
-        # if not self.firstToSearchEdt.text() == '':
         if not what == '':
             self.recordLimitEdt.setText('0')
             self.key_search = self.sort_dic[where_index]
-            # if self.firstSearchCbox.currentIndex() == 3: # na cota tem de ser exactamente igual
             if where_index == 'cota/local': # na cota tem de ser exactamente igual
                 text_to_search = "\'" + what.lower().strip() + "\'"
             else:

@@ -240,7 +240,6 @@ class EditRecord(QDialog):
         self.get_wookBtn.clicked.connect(self.get_wook_click)
         self.buttonsLayout.addWidget(self.get_wookBtn)
         
-        
         self.btnSai = QPushButton()
         self.btnSai.setText('Sair')
         self.buttonsLayout.addWidget(self.btnSai)
