@@ -7,13 +7,14 @@ from PyQt5.QtWidgets import QTabWidget, QLabel, QCheckBox, QVBoxLayout, QLineEdi
 from PyQt5.Qt import Qt
 
 import isbn_lib
-import parameters as pa
+import parameters as gl
 import dmPostgreSQL as dbmain
 import data_access as data_access
 import missing_data
-from qlib import setSize,addHLayout,HLine
+from qlib import addHLayout,HLine
 import tag_browser
 import stdio
+import locals
 
 
 class EditRecord(QDialog):
@@ -22,7 +23,7 @@ class EditRecord(QDialog):
         self.setWindowTitle('Edita Livros')
         self.resize(1024, 768)
         self.error_list = []
-        pa.userError = ''
+        gl.userError = ''
         self.toto = False
         self.id = id
         
@@ -30,7 +31,7 @@ class EditRecord(QDialog):
         self.buttonsLayout = QHBoxLayout()
         # tabs
         self.titleLayout = QVBoxLayout()
-        self.makeButtons()
+        self.make_buttons()
         self.make_title()
         self.tabuladorTabWidget = QTabWidget()
         self.makeTab2()
@@ -67,15 +68,19 @@ class EditRecord(QDialog):
         
         self.stored = True
         if self.pu_cota.text() == '':
-            self.pu_cota.setText(pa.ON_LOCAL)
+            self.pu_cota.setText(gl.ON_LOCAL)
     
     def make_title(self):
         self.pu_title = QLineEdit()
         titleCapitalize = QToolButton()
-        setSize(titleCapitalize)
-        titleCapitalize.setIcon(QIcon('./img/blue.png'))
+        titleCapitalize.setIcon(QIcon('./img/caps.png'))
         titleCapitalize.setToolTip('Capitaliza Titulo')
         titleCapitalize.clicked.connect(self.title_caps)
+        searchTitleBtn = QToolButton()
+        searchTitleBtn.setIcon(QIcon('./img/chrome.png'))
+        searchTitleBtn.setToolTip('Pesquisa na internet')
+        searchTitleBtn.clicked.connect(self.title_internet_search)
+        
         
         self.pu_volume = QLineEdit()
         self.pu_volume.setMaximumWidth(40)
@@ -85,13 +90,13 @@ class EditRecord(QDialog):
         self.pu_ed_year.setMaximumWidth(60)
         self.pu_ed_year.setMaxLength(4)
         
-        self.titleLayout.addLayout(addHLayout(['Titulo:', self.pu_title,titleCapitalize]))
+        self.titleLayout.addLayout(addHLayout(['Titulo:', self.pu_title,titleCapitalize,searchTitleBtn]))
         self.titleLayout.addLayout(addHLayout(['Volume:', self.pu_volume, 'Ano',self.pu_ed_year, True]))
         self.pu_sub_title = QLineEdit()
         self.pu_sub_title.setMaxLength(255)
         subTitleCapitalize = QToolButton()
-        setSize(subTitleCapitalize)
-        subTitleCapitalize.setIcon(QIcon('./img/blue.png'))
+        # setSize(subTitleCapitalize)
+        subTitleCapitalize.setIcon(QIcon('./img/caps.png'))
         subTitleCapitalize.setToolTip('Capitaliza sub-titulo')
         subTitleCapitalize.clicked.connect(self.sub_title_caps)
         self.titleLayout.addLayout(addHLayout(['Sub-titulo:', self.pu_sub_title,subTitleCapitalize]))
@@ -101,16 +106,19 @@ class EditRecord(QDialog):
         self.pu_author_id = QComboBox(self)
         self.pu_author_id.setEditable(True)
         authorToTagBtn = QToolButton()
-        setSize(authorToTagBtn)
         authorToTagBtn.setIcon(QIcon('./img/green.png'))
         authorToTagBtn.setToolTip('Adiciona autor ás etiquetas')
+        searchAuthorBtn = QToolButton()
+        searchAuthorBtn.setIcon(QIcon('./img/chrome.png'))
+        searchAuthorBtn.setToolTip('Pesquisa na internet')
+        searchAuthorBtn.clicked.connect(self.author_internet_search)
         authorToTagBtn.clicked.connect(self.add_author_to_tags)
-        self.titleLayout.addLayout(addHLayout(['Autor:', self.pu_author_id,authorToTagBtn]))
+        self.titleLayout.addLayout(addHLayout(['Autor:', self.pu_author_id,authorToTagBtn,searchAuthorBtn]))
         
         self.pu_type = QComboBox()
         self.pu_type.setEditable(True)
         typeToTagBtn = QToolButton()
-        setSize(typeToTagBtn)
+        # setSize(typeToTagBtn)
         typeToTagBtn.setIcon(QIcon('./img/green.png'))
         typeToTagBtn.setToolTip('Adiciona tipo às etiquetas')
         typeToTagBtn.clicked.connect(self.add_type_to_tags)
@@ -124,58 +132,28 @@ class EditRecord(QDialog):
         
         self.pu_isbn = QLineEdit()
         self.pu_isbn.setMaxLength(20)
+
+        searchIsbnBtn = QToolButton()
+        searchIsbnBtn.setIcon(QIcon('./img/chrome.png'))
+        searchIsbnBtn.setToolTip('Pesquisa na internet')
+        searchIsbnBtn.clicked.connect(self.isbn_internet_search)
         
-        self.pu_isbn10 = QLineEdit()
-        self.pu_isbn10.setMaxLength(10)
-        
-        self.pu_isbn10.setObjectName('pu_isbn10')
+        # self.pu_isbn10 = QLineEdit()
+        # self.pu_isbn10.setMaxLength(10)
+        #
+        # self.pu_isbn10.setObjectName('pu_isbn10')
         self.pu_depLegal = QLineEdit()
         self.pu_depLegal.setMaxLength(20)
-        
-        self.titleLayout.addLayout(addHLayout(['ISBN:', self.pu_isbn, 'Cota:', self.pu_cota]))
+        setLocalBtn = QToolButton()
+        setLocalBtn.setIcon(QIcon('./img/blue.png'))
+        setLocalBtn.setToolTip('Ver locais')
+        setLocalBtn.clicked.connect(self.set_local_click)
+        pasteLocalBtn = QToolButton()
+        pasteLocalBtn.setIcon(QIcon('./img/paste.png'))
+        pasteLocalBtn.setToolTip('Cola o ultimo local')
+        pasteLocalBtn.clicked.connect(self.paste_local_click)
+        self.titleLayout.addLayout(addHLayout(['ISBN:', self.pu_isbn,searchIsbnBtn, 'Cota:', self.pu_cota,setLocalBtn,pasteLocalBtn]))
     
-    def makeTab1(self):
-        self.tab1 = QWidget()
-        mainTab1Layout = QVBoxLayout(self.tab1)
-        tab1Layout = QVBoxLayout()
-        self.pu_author_others = QLineEdit()
-        self.pu_author_others.setMaxLength(150)
-        
-        tab1Layout.addLayout(addHLayout(['Outros Autores', self.pu_author_others]))
-        
-        self.pu_translator = QComboBox()
-        self.pu_translator.setMinimumWidth(300)
-        self.pu_translator.setEditable(True)
-        
-        self.pu_translator.addItems(pa.dsTradutores)
-        
-        self.pu_language = QComboBox()
-        self.pu_language.setMinimumWidth(100)
-        self.pu_language.setEditable(True)
-        tab1Layout.addLayout(addHLayout(['Tradutor:', self.pu_translator, 'Lingua:', self.pu_language]))
-        
-        self.pu_edition_number = QLineEdit()
-        self.pu_edition_number.setObjectName('pu_edition_number-int')
-        self.pu_edition_number.setAlignment(Qt.AlignRight)
-        self.pu_edition_number.setMinimumWidth(40)
-        
-        self.pu_edition_number.setInputMask('nnnnnn')
-        self.pu_edition_number.setMaxLength(6)
-        
-        tab1Layout.addLayout(addHLayout(['Editor(a):', self.pu_editor_id, 'Edição Num.:', self.pu_edition_number]))
-        
-        self.pu_ed_date = QLineEdit()
-        self.pu_ed_date.setMaxLength(10)
-        self.pu_ed_date.setMaximumWidth(50)
-        
-        self.pu_ed_local = QLineEdit()
-        self.pu_ed_local.setMaxLength(40)
-        
-        tab1Layout.addLayout(addHLayout(['Data:', self.pu_ed_date, 'Local:', self.pu_ed_local]))
-        
-        # junta
-        mainTab1Layout.addLayout(tab1Layout)
-        mainTab1Layout.addStretch()
     
     def makeTab2(self):
         self.tab2 = QWidget()
@@ -221,7 +199,7 @@ class EditRecord(QDialog):
         tab4Layout.addWidget(self.pu_sinopse)
         mainTab4Layout.addLayout(tab4Layout)
     
-    def makeButtons(self):
+    def make_buttons(self):
         self.btnGrava = QPushButton()
         self.btnGrava.setText('Grava')
         self.buttonsLayout.addWidget(self.btnGrava)
@@ -245,7 +223,24 @@ class EditRecord(QDialog):
         self.buttonsLayout.addWidget(self.btnSai)
         self.buttonsLayout.addStretch()
         self.btnSai.clicked.connect(self.exit_form)
-    
+
+        # previousBtn = QToolButton()
+        # previousBtn.setIcon(QIcon('./img/previous.png'))
+        # previousBtn.setToolTip('Anterior')
+        # self.buttonsLayout.addWidget(previousBtn)
+        # previousBtn.clicked.connect(self.previous_record_click)
+        
+
+        # saveRecordBnt = QToolButton()
+        # saveRecordBnt.setIcon(QIcon('./img/record.png'))
+        # self.buttonsLayout.addWidget(saveRecordBnt)
+        # saveRecordBnt.setToolTip('Grava')
+        #
+        # nextBtn = QToolButton()
+        # nextBtn.setIcon(QIcon('./img/next.png'))
+        # self.buttonsLayout.addWidget(nextBtn)
+        # nextBtn.setToolTip('Seguinte')
+        
     
     def get_wook_click(self):
         xl = isbn_lib.get_isbn_wook(self.pu_isbn.text())
@@ -312,9 +307,9 @@ class EditRecord(QDialog):
     def record_save(self):
         # só grava não haver nenhuma alteração ás tabelas externas'
         """ insere """
-        pa.ON_LOCAL = self.pu_cota.text().upper().strip()
-        pa.TYPE = self.pu_type.currentIndex()
-        pa.STATUS = self.pu_status.currentIndex()
+        gl.ON_LOCAL = self.pu_cota.text().upper().strip()
+        gl.TYPE = self.pu_type.currentIndex()
+        gl.STATUS = self.pu_status.currentIndex()
         if self.item_data == -1:
             if self.check_new_record():
                 # print 'insere registo'
@@ -402,7 +397,7 @@ class EditRecord(QDialog):
                 self.error_list.append('Não foi definido o Autor.')
             else:
                 dum = stdio.authors_process(dum)
-                if dum.lower() not in pa.autores_dict:
+                if dum.lower() not in gl.autores_dict:
                     if self.askForNew("Foi encontrada um novo Autor", "Adicionar este Autor?", dum):
                         dbmain.execute_query('INSERT INTO authors (au_name) VALUES(%s); ', (dum,))
                         self.pu_author_id.setEditText(dum)
@@ -416,7 +411,7 @@ class EditRecord(QDialog):
         if dum == '':
             self.error_list.append('Não foi definido o Tipo.')
         else:
-            if dum.lower() not in pa.types_dict:
+            if dum.lower() not in gl.types_dict:
                 recordFlag = False
                 if self.askForNew("Foi encontrada um novo types", "Adicionar este types?", dum):
                     self.pu_type.setEditText(dum)
@@ -431,7 +426,7 @@ class EditRecord(QDialog):
         if dum == '':
             self.error_list.append('Não foi definido o Estado.')
         else:
-            if dum.lower() not in pa.status_dict:
+            if dum.lower() not in gl.status_dict:
                 recordFlag = False
                 if self.askForNew("Foi encontrad um novo Estado.", "Adiciono este Estado/Lista?", dum):
                     self.pu_status.setEditText(dum)
@@ -441,13 +436,8 @@ class EditRecord(QDialog):
                     self.error_list.append('Não foi definido o Estado.')
     
     def askForNew(self, caption, prefix, text):
-        if QMessageBox.information(None,
-                                   "" + caption + "",
-                                   "" + prefix + '\n' + text + "",
-                                   QMessageBox.StandardButtons( \
-                                           QMessageBox.Cancel | \
-                                           QMessageBox.Ok),
-                                   QMessageBox.Ok) == QMessageBox.Ok:
+        if QMessageBox.information(None,caption , prefix + '\n' + text,
+                                   QMessageBox.StandardButtons(QMessageBox.Cancel |QMessageBox.Ok), QMessageBox.Ok) == QMessageBox.Ok:
             return True
         else:
             return False
@@ -461,6 +451,17 @@ class EditRecord(QDialog):
     def record_clone(self):
         self.duplicaRegisto()
     
+    def set_local_click(self):
+        form = locals.BrowserLocals()
+        form.exec_()
+        if not form.toto == '':
+            self.pu_cota.setText(form.toto)
+            gl.ON_LOCAL = form.toto
+    
+    def paste_local_click(self):
+        if gl.ON_LOCAL != '':
+            self.pu_cota.setText(gl.ON_LOCAL)
+    
     def add_author_to_tags(self):
         self.tags.setHtml(self.tags.toHtml() + ',<font color="blue"><strong>' +self.pu_author_id.currentText().lower())
     
@@ -470,7 +471,17 @@ class EditRecord(QDialog):
     def title_caps(self):
         a = isbn_lib.text_title(self.pu_title.text())
         self.pu_title.setText(a)
+
+    def title_internet_search(self):
+        stdio.search_internet(self.pu_title.text())
     
+    def isbn_internet_search(self):
+        stdio.search_internet('ISBN ' + self.pu_isbn.text())
+
+    def author_internet_search(self):
+        stdio.search_internet(self.pu_author_id.currentText())
+
+   
     def sub_title_caps(self):
         a = isbn_lib.text_title(self.pu_sub_title.text())
         self.pu_sub_title.setText(a)
@@ -516,6 +527,10 @@ class EditRecord(QDialog):
 
     def show_sizes_click(self):
         pass
+    
+    def previous_record_click(self):
+        for n in gl.FILTER_DATASET:
+            print(n[0])
     
     def procField(self, aString):
         if aString is None:
@@ -570,13 +585,13 @@ class EditRecord(QDialog):
     def update_combo_boxes(self):
         # limpa os campos
         self.pu_author_id.clear()
-        self.pu_author_id.addItems(pa.dsAutores)
+        self.pu_author_id.addItems(gl.dsAutores)
         self.pu_type.clear()
-        self.pu_type.addItems(pa.ds_types)
+        self.pu_type.addItems(gl.ds_types)
         self.pu_status.clear()
-        self.pu_status.addItems(pa.dsStatus)
-        self.pu_type.setCurrentText(pa.STATUS)
-        self.pu_type.setCurrentText(pa.TYPE)
+        self.pu_status.addItems(gl.dsStatus)
+        self.pu_type.setCurrentText(gl.STATUS)
+        self.pu_type.setCurrentText(gl.TYPE)
     
     def refresh_datafields(self):
         self.update_combo_boxes()
@@ -621,11 +636,11 @@ class EditRecord(QDialog):
         
         ''' campos especiais '''
         self.id = dbmain.query_one('select max(pu_id) from livros', (True,))[0]
-        pa.last_id = self.id
+        gl.last_id = self.id
         ''' actualiza obs'''
         self.update_tags()
-        pa.TYPE = self.pu_type.currentText()
-        pa.STATUS = self.pu_status.currentText()
+        gl.TYPE = self.pu_type.currentText()
+        gl.STATUS = self.pu_status.currentText()
     
     def update_record(self):
         sql = '''UPDATE livros SET 
@@ -645,7 +660,7 @@ class EditRecord(QDialog):
         data = (self.pu_author_id.currentText().lower(),)
         data += (self.pu_cota.text().upper().strip(),)
         data += (self.pu_type.currentText().lower(),)
-        data += (self.pu_isbn.text().strip(),)
+        data += (self.pu_isbn.text().strip().replace('-',''),)
         data += (self.pu_obs.toPlainText(),)
         data += (self.pu_sinopse.toPlainText(),)
         data += (self.pu_status.currentText().lower(),)
@@ -659,8 +674,8 @@ class EditRecord(QDialog):
         ''' actualiza obs'''
         if str(self.tags_stack) != str(self.tags.toPlainText()):
             self.update_tags()
-        pa.TYPE = self.pu_type.currentText()
-        pa.STATUS = self.pu_status.currentText()
+        gl.TYPE = self.pu_type.currentText()
+        gl.STATUS = self.pu_status.currentText()
     
     def update_tags(self):
         ''' get tags'''
@@ -686,7 +701,6 @@ class EditRecord(QDialog):
         text = text.replace('<b', '')
         text = text.replace('/', '')
         return text
-
 
 def write_record(obj, dic={}):
     a = type(obj)

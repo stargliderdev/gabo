@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QTextEdit, QCheckBox, QVBoxLayout, QLineEdit, QDialog, QComboBox,\
-    QPushButton, QApplication
+    QPushButton, QApplication,QMessageBox
 from PyQt5.Qt import Qt
 import qlib
 import edit_record
@@ -9,6 +9,8 @@ import sys
 import isbn_lib
 import parameters as gl
 import dmPostgreSQL
+import stdio
+
 
 class InputIsbn(QDialog):
     def __init__(self, parent=None):
@@ -107,7 +109,13 @@ class InputIsbn(QDialog):
             form = edit_record.EditRecord(-1, xl, isbn=True)
             form.exec_()
         else:
-            self.outputPlainText.append(str(xl))
+            self.outputPlainText.setText('Este ISBN não existe!')
+            b = QMessageBox.question(self,
+                'Este ISBN não existe',
+                'Este ISBN não existe na Wook, procurar na internet?',
+                QMessageBox.StandardButtons(QMessageBox.No | QMessageBox.Yes), QMessageBox.No)
+            if b == QMessageBox.Yes:
+                stdio.search_internet('ISBN ' + self.isbn.text())
     
     def exit_click(self):
         self.close()

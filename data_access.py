@@ -37,6 +37,13 @@ def get_status():
         gl.status_dict[n[1].lower()] = n[0]
         gl.dsStatus.append(n[1])
 
+def get_locals():
+    a = dbmain.query_many('select lc_id,lc_name from locals')
+    gl.locals_list = []
+    gl.locals_dict = {}
+    for n in a:
+        gl.locals_list.append(n[1])
+
 
 def search_data_in_table(table, field, data_to_search):
     sql = 'SELECT * from ' + table + ' where ' + 'lower(' + field +') = \'' + data_to_search.lower() + '\''
@@ -221,7 +228,7 @@ def get_areas():
         gl.ds_areas.append(n[0])
     
 def get_special_tags():
-    a = dbmain.query_many('''select tag_s_name, tag_s_key from tags_special order by tag_s_id''')
+    a = dbmain.query_many('''select tag_s_name, tag_s_key from tags_special order by tag_s_order''')
     gl.tag_special_list = []
     for n in a:
         gl.tag_special_list.append((n[0], n[1]))
@@ -230,5 +237,3 @@ def get_special_tags():
     
 if __name__ == "__main__":
     pass
-    # settings.load_settings()
-    # pprint.pprint(get_modelo_data(2144))

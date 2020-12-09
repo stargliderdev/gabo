@@ -12,6 +12,7 @@ class BrowserLocals(QDialog):
         super(BrowserLocals,  self).__init__(parent)
         self.resize(600, 400)
         self.setWindowTitle('Locais')
+        self.toto = ''
         masterLayout = QVBoxLayout(self)
         self.grid = QTableWidget()
         self.grid.setSelectionBehavior(QTableWidget.SelectRows)
@@ -42,10 +43,9 @@ class BrowserLocals(QDialog):
         a = dbmain.query_one(sql, (self.fromEdt.text().upper(),))
         flag = True
         if not a[0] > 0:
-            print('sem source')
             b = QMessageBox.question(
                 self,
-                self.tr("Cota inisistente"),
+                self.tr("Cota inistente"),
                 self.tr("""A Cota de origem não existe!
             Continuar?"""),
                 QMessageBox.StandardButtons(
@@ -60,7 +60,7 @@ class BrowserLocals(QDialog):
             self.grid_refresh()
 
     def valid_click(self):
-        self.toto = self.grid.item(self.grid.currentRow(), 1).text()
+        self.toto = self.grid.item(self.grid.currentRow(), 0).text()
         self.close()
 
     def grid_refresh(self):

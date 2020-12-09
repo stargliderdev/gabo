@@ -37,6 +37,21 @@ def query_one(sql, data):
         error_print(e, sql,'query_one',data)
         sys.exit(1)
 
+
+def query_one_simple(sql):
+    try:
+        conn = psycopg2.connect(pa.conn_string)
+        cur = conn.cursor()
+        cur.execute(sql)
+        xl = cur.fetchone()
+        cur.close()
+        conn.close()
+        return xl
+    
+    except Exception as e:
+        error_print(e, sql, 'query_one_simple')
+        sys.exit(1)
+
 def query_many(sql):
     try:
         conn = psycopg2.connect(pa.conn_string)
@@ -57,18 +72,18 @@ def error_print(err,sql, caller,data='', to_file=True, d_file=True, show=True):
     if d_file:
         stdio.file_ok('error.txt')
     sql = sql.lower()
-    output_string ='%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\r\n'
+    output_string ='-'* 30 +'\n'
     output_string +='     SQL ERROR IN ' + caller + '()\r\n ' + str(err) + '\r\n'
-    output_string += '****************************************\r\n'
+    output_string += '-' * 30 + '\n'
     sql_dump = []
     b = sql.find('from')
     sql_dump.append(sql[:b])
     c = sql.find('where')
     sql_dump.append(sql[b:c])
     sql_dump.append(sql[c:])
-    output_string += '* SQL:' + '\r\n* '.join(sql_dump) + '\r\n'
-    output_string += '* DATA:' + str(data) + '\r\n'
-    output_string += '****************************************\r\n'
+    output_string += 'SQL:\n' + '\r\n* '.join(sql_dump) + '\r\n'
+    output_string += 'DATA:\n' + str(data) + '\r\n'
+    output_string += '-' * 30 + '\n'
     if to_file:
         output_string += '@ ' + datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         print(output_string, file=open("error.txt", "a"))

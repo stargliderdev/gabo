@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import datetime
+import webbrowser
 from random import randrange
 from operator import itemgetter
 
@@ -193,6 +194,10 @@ def remove_duplicates(values):
             seen.add(value)
     return output
 
+def search_internet(txt):
+    url = "https://www.google.com.tr/search?q={}".format(txt)
+    b = webbrowser.get('google-chrome')
+    b.open(url)
 
 if __name__ == '__main__':
     pass

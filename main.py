@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import QDesktopWidget, QLabel, QVBoxLayout, QLineEdit, QCom
     QWidget, QMainWindow, QApplication, QMessageBox, QStyleFactory, QToolButton, QAction
 from PyQt5.QtGui import QIcon
 
+import storage
+
 try:
     from win32api import GetSystemMetrics
     import wmi
@@ -29,7 +31,8 @@ import input_isbn
 import authors
 import make_report_html
 import report_display
-
+import locals
+import lib_gabo
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -64,6 +67,7 @@ class MainWindow(QMainWindow):
         data_access.load_preps()
         data_access.get_areas()
         data_access.get_special_tags()
+        data_access.get_locals()
         print('ending loading datasets!')
         self.status.extend(gl.dsStatus)
         self.types.extend(gl.ds_types)
@@ -71,10 +75,7 @@ class MainWindow(QMainWindow):
         self.center()
         gl.DEBUG = True
         QApplication.setStyle(QStyleFactory.create('Fusion'))
-        self.sort_dic = {'nada': 'livros.pu_id', 'autor': 'authors.au_name', 'titulo': 'livros.PU_TITLE',
-                         'isbn': 'livros.pu_isbn', 'cota/local': 'livros.pu_cota',
-                         'tipos': ' livros.pu_type ',
-                         'volume': 'livros.pu_volume', 'ano': 'livros.pu_ed_year, livros.pu_volume '}
+
                 
         mainLayout = QVBoxLayout(self.centralwidget)
         # barra de pesquisa
@@ -82,7 +83,7 @@ class MainWindow(QMainWindow):
         self.firstSearchCbox = QComboBox()
         self.firstSearchCbox.setMaximumWidth(90)
         self.firstSearchCbox.setMinimumWidth(90)
-        self.firstSearchCbox.addItems(['Autor', 'Titulo', 'ISBN', 'Cota/Local'])
+        self.firstSearchCbox.addItems(['apaga', 'Titulo', 'ISBN', 'tag'])
         self.firstSearchCbox.setCurrentIndex(1)
         
         self.firstToSearchEdt = QLineEdit()
@@ -99,50 +100,60 @@ class MainWindow(QMainWindow):
         firstClearBtn.setToolTip('Limpa Pesquisa')
         firstClearBtn.setIcon(QIcon('./img/clear.png'))
         self.set_icon_size(firstSearchBtn)
+        firstSearchBtn.clicked.connect(self.first_field_clear_click)
+        
         """ segunda pesquisa"""
-        self.secondSearchCBox = QComboBox()
-        self.secondSearchCBox.addItems(['Autor', 'Titulo', 'ISBN', 'Cota/Local'])
-        self.secondSearchCBox.setMaximumWidth(90)
-        self.secondSearchCBox.setMinimumWidth(90)
-        self.secondSearchCBox.setCurrentIndex(0)
-        self.secondToSearchEdt = QLineEdit()
-        self.secondToSearchEdt.setMaximumWidth(300)
-        self.secondToSearchEdt.setMinimumWidth(300)
-
-        secondSearchBtn = QToolButton()
-        secondSearchBtn.setToolTip('Pesquisa texto')
-        secondSearchBtn.setIcon(QIcon('./img/search.png'))
-        self.set_icon_size(secondSearchBtn)
-        secondSearchBtn.clicked.connect(self.second_field_search_click)
+        self.authorSearchBtn = QPushButton('Autor')
+        self.authorSearchBtn.setMaximumWidth(90)
+        self.authorSearchBtn.setMinimumWidth(90)
+        self.authorToSearchEdt = QLineEdit()
+        self.authorToSearchEdt.setMaximumWidth(300)
+        self.authorToSearchEdt.setMinimumWidth(300)
+        self.authorSearchBtn.clicked.connect(self.author_search_click)
+        authorsBtn = QToolButton()
+        authorsBtn.setToolTip('Autores')
+        authorsBtn.setIcon(QIcon('./img/authors.png'))
+        authorsBtn.clicked.connect(self.authors_click)
+        # self.authorSearchBtn.addItems(['Autor', 'Titulo', 'ISBN', 'Cota/Local'])
+        # self.authorSearchBtn.setCurrentIndex(0)
+        # secondSearchBtn = QToolButton()
+        # secondSearchBtn.setToolTip('Pesquisa texto')
+        # secondSearchBtn.setIcon(QIcon('./img/search.png'))
+        # self.set_icon_size(secondSearchBtn)
+        
 
         secondClearBtn = QToolButton()
         secondClearBtn.setToolTip('Limpa Pesquisa')
         secondClearBtn.setIcon(QIcon('./img/clear.png'))
         self.set_icon_size(secondClearBtn)
-        secondClearBtn.clicked.connect(self.clear_field_search)
+        secondClearBtn.clicked.connect(self.second_field_clear_click)
         
         """ terceira pesquisa"""
-        self.thirdSearchCBox = QComboBox()
-        self.thirdSearchCBox.addItems(['Autor', 'Titulo', 'ISBN', 'Cota/Local'])
-        self.thirdSearchCBox.setMaximumWidth(90)
-        self.thirdSearchCBox.setMinimumWidth(90)
-        self.thirdSearchCBox.setCurrentIndex(3)
+        self.localSearchBtn = QPushButton('Local')
+        self.localSearchBtn.setMaximumWidth(90)
+        self.localSearchBtn.setMinimumWidth(90)
+        self.localSearchBtn.clicked.connect(self.local_search_click)
         
-        self.thirdToSearchEdt = QLineEdit()
-        self.thirdToSearchEdt.setMaximumWidth(90)
-        self.thirdToSearchEdt.setMinimumWidth(90)
-        
-        thirdSearchBtn = QToolButton()
-        thirdSearchBtn.setToolTip('Pesquisa texto')
-        thirdSearchBtn.setIcon(QIcon('./img/search.png'))
-        self.set_icon_size(thirdSearchBtn)
-        thirdSearchBtn.clicked.connect(self.third_field_search_click)
+        self.localToSeachEdt = QLineEdit()
+        self.localToSeachEdt.setMaximumWidth(90)
+        self.localToSeachEdt.setMinimumWidth(90)
+        cotasBtn = QToolButton()
+        cotasBtn.setToolTip('Limpa Pesquisa')
+        cotasBtn.setIcon(QIcon('./img/locals.png'))
+        cotasBtn.clicked.connect(self.locals_click)
+        # cotasBtn.setText('Cotas')
+        # self.localSearchBtn.addItems(['Autor', 'Titulo', 'ISBN', 'Cota/Local'])
+        # self.localSearchBtn.setCurrentIndex(3)
+        # thirdSearchBtn = QToolButton()
+        # thirdSearchBtn.setToolTip('Pesquisa texto')
+        # thirdSearchBtn.setIcon(QIcon('./img/search.png'))
+        # self.set_icon_size(thirdSearchBtn)
 
         thirdClearBtn = QToolButton()
         thirdClearBtn.setToolTip('Limpa Pesquisa')
         thirdClearBtn.setIcon(QIcon('./img/clear.png'))
         self.set_icon_size(thirdClearBtn)
-        thirdClearBtn.clicked.connect(self.clear_field_search)
+        thirdClearBtn.clicked.connect(self.third_field_clear_click)
         
         
         search_tags_Btn = QToolButton()
@@ -157,11 +168,11 @@ class MainWindow(QMainWindow):
         self.set_icon_size(clear_tags_Btn)
         clear_tags_Btn.clicked.connect(self.clear_tags_search)
         
-        self.logicTags = QComboBox()
-        self.logicTags.setMaximumWidth(90)
-        self.logicTags.setMinimumWidth(90)
-        self.logicTags.addItems(['OU', 'E'])
-        self.tags_to_searchEdit = QLineEdit()
+        # self.logicTags = QComboBox()
+        # self.logicTags.setMaximumWidth(90)
+        # self.logicTags.setMinimumWidth(90)
+        # self.logicTags.addItems(['OU', 'E'])
+        # self.tags_to_searchEdit = QLineEdit()
         self.tags_browserBtn = QToolButton()
         self.tags_browserBtn.setToolTip('Gere Etiquetas')
         self.tags_browserBtn.setIcon(QIcon('./img/tags.png'))
@@ -182,12 +193,12 @@ class MainWindow(QMainWindow):
         self.addBookBtn.setIcon(QIcon('./img/addbook.png'))
         
         # drop tools menu
-        toolsDropMenu = QMenu()
-        deletedAction = QAction('Ver Apagados', self)
-        deletedAction.triggered.connect(self.show_delete_click)
-        toolsDropMenu.addAction(deletedAction)
-        toolsBtn = QPushButton('Ferramentas')
-        toolsBtn.setMenu(toolsDropMenu)
+        # toolsDropMenu = QMenu()
+        # deletedAction = QAction('Ver Apagados', self)
+        # deletedAction.triggered.connect(self.show_delete_click)
+        # toolsDropMenu.addAction(deletedAction)
+        # toolsBtn = QPushButton('Ferramentas')
+        # toolsBtn.setMenu(toolsDropMenu)
         
         printBtn = QToolButton()
         printBtn.setIcon(QIcon('./img/print.png'))
@@ -206,14 +217,6 @@ class MainWindow(QMainWindow):
         clone_Btn.setText('&Clona')
         clone_Btn.clicked.connect(self.clone_click)
         
-        authors_Btn = QPushButton()
-        authors_Btn.setText('Autores')
-        authors_Btn.clicked.connect(self.authors_click)
-
-        cotas_Btn = QPushButton()
-        cotas_Btn.setText('Cotas')
-        cotas_Btn.clicked.connect(self.locals_click)
-        
         aboutBtn = QToolButton()
         aboutBtn.setToolTip('Acerca')
         aboutBtn.setIcon(QIcon('./img/info.png'))
@@ -228,37 +231,44 @@ class MainWindow(QMainWindow):
         
         self.sortByCbox = QComboBox()
         self.sortByCbox.setCurrentIndex(0)
-        self.sortByCbox.addItems(['Nada', 'Autor', 'Titulo', 'Tipos', 'Cota/Local', 'Volume', 'Ano'])
+        self.sortByCbox.addItems(['Nada', 'Autor', 'Titulo', 'Tipos', 'Local', 'Volume', 'Ano'])
         self.sortByCbox.setCurrentIndex(0)
-        self.sortByCbox.currentIndexChanged.connect(self.filter_click)
+        self.sortByCbox.currentIndexChanged.connect(self.sort_by_change)
         self.recordLimitEdt = QLineEdit()
         self.recordLimitEdt.setMaximumWidth(40)
         self.recordLimitEdt.setMaxLength(4)
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
         self.recordLimitEdt.editingFinished.connect(self.limit_change)
         
-        self.types_filterCbox = QComboBox()
-        self.types_filterCbox.addItems(self.types)
-        self.types_filterCbox.setCurrentIndex(0)
-        self.types_filterCbox.currentIndexChanged.connect(self.types_change)
-        self.status_filterCbox = QComboBox()
-        self.status_filterCbox.setCurrentIndex(0)
+        self.typesCbox = QComboBox()
+        self.typesCbox.addItems(self.types)
+        self.typesCbox.setCurrentIndex(0)
+        self.typesCbox.currentIndexChanged.connect(self.types_change)
+        self.statusCbox = QComboBox()
+        self.statusCbox.setCurrentIndex(0)
 
-        self.status_filterCbox.addItems(self.status)
-        self.status_filterCbox.currentIndexChanged.connect(self.status_change)
+        self.statusCbox.addItems(self.status)
+        self.statusCbox.currentIndexChanged.connect(self.status_change)
+        widthSumBtn = QToolButton()
+        widthSumBtn.setToolTip('Sair')
+        widthSumBtn.setIcon(QIcon('./img/width_sigma.png'))
+        self.set_icon_size(widthSumBtn)
+        widthSumBtn.clicked.connect(self.width_sum_click)
+        
         
         mainLayout.addLayout(qlib.addHLayout(
-            [bookAddBtn, bookAddIsbnBtn, self.last_fiveBtn, authors_Btn, cotas_Btn, double1_Btn, clone_Btn, toolsBtn,printBtn, True,
-              aboutBtn, closeBtn]))
+            [bookAddBtn, bookAddIsbnBtn, self.last_fiveBtn, double1_Btn, clone_Btn,  printBtn, True,
+             aboutBtn, closeBtn]))
         mainLayout.addLayout(qlib.addHLayout(
-            [self.firstSearchCbox, self.firstToSearchEdt, firstSearchBtn, firstClearBtn,
-             self.secondSearchCBox, self.secondToSearchEdt, secondSearchBtn, secondClearBtn,
-             self.thirdSearchCBox, self.thirdToSearchEdt, thirdSearchBtn, thirdClearBtn, True]))
+            [self.firstSearchCbox, self.firstToSearchEdt, firstSearchBtn, firstClearBtn, self.tags_browserBtn,authorsBtn
+             , self.authorToSearchEdt,self.authorSearchBtn , secondClearBtn,cotasBtn,
+              self.localToSeachEdt, self.localSearchBtn,widthSumBtn, thirdClearBtn, True]))
              
-        mainLayout.addLayout(qlib.addHLayout(
-            [self.logicTags, self.tags_to_searchEdit, self.tags_browserBtn, search_tags_Btn, clear_tags_Btn, True]))
+        # mainLayout.addLayout(qlib.addHLayout(
+        #     [self.logicTags, self.tags_to_searchEdit, self.tags_browserBtn, search_tags_Btn, clear_tags_Btn, True]))
         
-        mainLayout.addLayout(qlib.addHLayout(['Ordena:', self.sortByCbox, 'Tipos', self.types_filterCbox, 'Estado', self.status_filterCbox, True,'Resultados', self.recordLimitEdt]))
+        mainLayout.addLayout(qlib.addHLayout(['Ordena:', self.sortByCbox, 'Tipos', self.typesCbox, 'Estado', self.statusCbox,
+                                              True, True,'Resultados', self.recordLimitEdt]))
         
         # grid
         self.grid = QTableWidget(self)
@@ -272,8 +282,6 @@ class MainWindow(QMainWindow):
         self.grid.doubleClicked.connect(self.grid_double_click)
         
         mainLayout.addWidget(self.grid)
-        # self.firstToSearchEdt.returnPressed.connect(self.filter_click)
-        # self.firstSearchCbox.setCurrentIndex(1)
         # sub menus
         author_pub = QAction("Obras do Autor", self)
         author_pub.triggered.connect(self.author_pub_click)
@@ -282,7 +290,7 @@ class MainWindow(QMainWindow):
         local_pub = QAction("Obras nesta Cota", self)
         local_pub.triggered.connect(self.local_pub_click)
         self.grid.addAction(local_pub)
-        self.grid.setContextMenuPolicy(2)  # Qt.ActionsContextMenu)
+        self.grid.setContextMenuPolicy(2)
         
         self.last_records_click()
         try:
@@ -291,20 +299,31 @@ class MainWindow(QMainWindow):
         except NameError:
             pass
     
+    def sort_by_change(self):
+        if gl.LAST_SEARCH_WHERE ==1:
+            self.author_search_click()
+        elif gl.LAST_SEARCH_WHERE == 2:
+            self.local_search_click()
+    
     def types_change(self):
-        self.recordLimitEdt.setText('0')
-        self.filter_click()
+        if gl.LAST_SEARCH_WHERE ==1:
+            self.author_search_click()
+        elif gl.LAST_SEARCH_WHERE == 2:
+            self.local_search_click()
     
     def status_change(self):
-        self.recordLimitEdt.setText('0')
-        self.filter_click()
+        if gl.LAST_SEARCH_WHERE ==1:
+            self.author_search_click()
+        elif gl.LAST_SEARCH_WHERE == 2:
+            self.local_search_click()
     
     def author_pub_click(self):
         a = self.grid.item(self.grid.currentRow(), 2).text()
         self.firstToSearchEdt.setText(a)
         self.firstSearchCbox.setCurrentIndex(0)
-        self.filter_click()
-    
+        # self.filter_click()
+        self.first_field_search_click()
+        
     def local_pub_click(self):
         try:
             a = self.grid.item(self.grid.currentRow(), 5).text()
@@ -333,24 +352,33 @@ class MainWindow(QMainWindow):
         if self.grid.item(self.grid.currentRow(), 0) is not None:
             form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', isbn=False, copy=2)
             form.exec_()
-            self.refresh_grid()
+            # self.refresh_grid()
        
     def authors_click(self):
         form = authors.BrowserAuthors()
         form.exec_()
         if form.toto != '':
-            self.firstSearchCbox.setCurrentIndex(0)
-            self.firstToSearchEdt.setText(form.toto)
-            self.first_field_search_click()
+            # self.aut.setCurrentIndex(0)
+            self.authorToSearchEdt.setText(form.toto)
+            self.author_search_click()
     
     def locals_click(self):
-        import locals
         form = locals.BrowserLocals()
         form.exec_()
-        self.first_field_search_click()
+        if not form.toto == '':
+            # self.firstToSearchEdt.clear()
+            # self.authorToSearchEdt.clear()
+            self.localToSeachEdt.setText(form.toto)
+            self.local_search_click()
     
+    def width_sum_click(self):
+        # self.local_search_click()
+        # lib_gabo.calc_width_in_filter()
+        form = storage.StoreMangDialog()
+        form.exec_()
+        
     def print_click(self):
-        hl = make_report_html.main_grid_report(self.data_set)
+        hl = make_report_html.main_grid_report(gl.FILTER_DATASET)
         form = report_display.DisplayReport(hl)
         form.exec_()
         
@@ -371,9 +399,9 @@ class MainWindow(QMainWindow):
     def last_records_click(self):
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
         self.firstSearchCbox.setCurrentIndex(1)
-        self.firstToSearchEdt.setText('')
-        self.tags_to_searchEdit.setText('')
-        self.types_filterCbox.setCurrentIndex(0)
+        # self.firstToSearchEdt.setText('')
+        # self.tags_to_searchEdit.setText('')
+        self.typesCbox.setCurrentIndex(0)
         sql = '''SELECT
           livros.pu_id,
           livros.pu_title,
@@ -386,20 +414,20 @@ class MainWindow(QMainWindow):
         FROM
           livros, authors, types, status
         WHERE'''
-        if self.types_filterCbox.currentIndex() != 0:
+        if self.typesCbox.currentIndex() != 0:
             sql += ' livros.pu_type = (select ty_id from types where ty_name like \'' + str(
-                self.types_filterCbox.currentText()) + '\') and '
+                self.typesCbox.currentText()) + '\') and '
         
-        if self.status_filterCbox.currentIndex() != 0:
+        if self.statusCbox.currentIndex() != 0:
             sql += """ livros.pu_status = (select st_id from status where st_nome like \'""" + str(
-                self.status_filterCbox.currentText()) + """"\') and """
+                self.statusCbox.currentText()) + """"\') and """
         
         sql += """  livros.pu_status = status.st_id AND
           authors.au_id = livros.pu_author_id AND
           types.ty_id = livros.pu_type
         ORDER BY pu_id DESC LIMIT """ + gl.SHOW_RECORDS + ";"
        
-        self.data_set = dbmain.query_many(sql)
+        gl.FILTER_DATASET = dbmain.query_many(sql)
        
         self.update_grid()
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
@@ -412,12 +440,12 @@ class MainWindow(QMainWindow):
           authors.au_id = livros.pu_author_id AND
           types.ty_id = livros.pu_type
           ORDER BY pu_id desc;'''
-        self.data_set = dbmain.query_many(sql)
+        gl.FILTER_DATASET = dbmain.query_many(sql)
         self.update_grid()
     
     def refresh_grid(self):
-        # refresh grid by filters
-        # if filter empty go to last records
+        """refresh grid by filters"""
+        """ if filter empty go to last records"""
         self.first_field_search_click()
         if gl.records_in_ds == 0:
             self.search_tags_mode_click()
@@ -439,83 +467,89 @@ class MainWindow(QMainWindow):
     
 
     def make_sql(self, what='', where_index='nada'):
-        # v2
-        select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros, authors, types, status"
-        join_ = " livros.pu_status = status.st_id AND authors.au_id = livros.pu_author_id AND types.ty_id = livros.pu_type "
-        where_ = ' WHERE '
-        order_ = ''
-        search_ = ''
-        limit_ = ''
-        where_index = where_index.lower()
-        self.key_sort = self.sort_dic[self.sortByCbox.currentText().lower()]
-        if not what == '':
-            self.recordLimitEdt.setText('0')
-            self.key_search = self.sort_dic[where_index]
-            if where_index == 'cota/local': # na cota tem de ser exactamente igual
-                text_to_search = "\'" + what.lower().strip() + "\'"
-            else:
-                text_to_search = "\'%" + what.lower().strip() + "%\'"
-            
-            if len(text_to_search) > 1:
-                where_ += '''unaccent(lower(''' + self.key_search + ''')) LIKE  unaccent(''' + text_to_search + ''') AND '''
-            else:
-                where_ += ''' unaccent(upper(''' + self.key_search + ''')) SIMILAR TO ''' + '''unaccent(''' + text_to_search.upper() + ')' + ''' AND '''
-        elif  not self.tags_to_searchEdit.text() =='': # modo para tags
-            self.recordLimitEdt.setText('0')
-            tags = self.tags_to_searchEdit.text().replace("\'", "\\\'")
-            tags = tags.split(',')
-            in_data = ''
-            if self.logicTags.currentIndex() == 0:  # ou
-                for n in tags:
-                    toto = n.lower().strip()
-                    in_data += "unaccent(\'" + toto + "\'),"
-                a = dbmain.query_many(
-                    '''select ta_id from tags where unaccent(ta_name) in (''' + in_data[:-1] + ''')''')
-                i = []
-                for t in a:
-                    i.append(t[0])
-                if i:
-                    i = str(i)
-                    where_ += '''
-                         pu_id in(select * from (select tr_book from tag_ref where tr_tag in(''' + i[1:-1] + ''')) as foo) AND '''
-                else:
-                    where_ += '''pu_id in(select * from (select tr_book from tag_ref where tr_tag in(-1)) as foo) AND '''
-            else:
-                t = ''
-                for n in tags:
-                    t = t + "\'" + n.strip() + "\',"
-                t = t[:-1]
-                c = str(len(tags))
-                where_ = ''' where EXISTS (SELECT NULL
-                 FROM tag_ref tg
-                 JOIN TAGS t ON t.ta_id = tg.tr_tag
-                WHERE unaccent(t.ta_name) IN (unaccent(''' + t + '''))
-                  AND tg.tr_book = livros.pu_id
-             GROUP BY tg.tr_book
-               HAVING COUNT(t.ta_name) =''' + c + ''') and '''
-        else:  # não procura em nada
-            where_ += ''' livros.pu_status = status.st_id AND
-          authors.au_id = livros.pu_author_id AND
-          types.ty_id = livros.pu_type and '''
-            self.key_sort = self.sort_dic[self.sortByCbox.currentText().lower()]
-    
-        if self.types_filterCbox.currentIndex() != 0:
-            where_ += " livros.pu_type = (select ty_id from types where ty_name like \'" + str(
-                self.types_filterCbox.currentText()) + '\') and '
-    
-        if self.status_filterCbox.currentIndex() != 0:
-            where_ += " livros.pu_status = (select st_id from status where st_nome like \'" + str(
-                self.status_filterCbox.currentText()) + "\') and "
-    
-        order_ = ''' ORDER BY ''' + self.key_sort + ' asc '
-    
-        if int(gl.SHOW_RECORDS) > 0: #  int(self.recordLimitEdt.text()) > 0:
-            limit_ = 'LIMIT ' + gl.SHOW_RECORDS
-            order_ = ''' ORDER BY ''' + self.key_sort + ' asc '
-        else:
-            self.recordLimitEdt.setText(gl.SHOW_RECORDS)
-            limit_ = 'LIMIT 99999'
-        return select_ + where_ + join_ + order_ + limit_
+        # v2.5
+        
+        # gl.CURRENT_SQL = ''
+        # select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros, authors, types, status"
+        # join_ = " livros.pu_status = status.st_id AND authors.au_id = livros.pu_author_id AND types.ty_id = livros.pu_type "
+        # where_ = ' WHERE '
+        # order_ = ''
+        # search_ = ''
+        # limit_ = ''
+        # where_index = where_index.lower()
+        # self.key_sort = self.sort_dic[self.sortByCbox.currentText().lower()]
+        # if not what == '':
+        #     self.recordLimitEdt.setText('0')
+        #     # self.key_search = self.sort_dic[where_index]
+        #     if where_index == 'local': # na cota tem de ser exactamente igual
+        #         self.key_search = self.sort_dic['local']
+        #         text_to_search = "\'" + what.lower().strip() + "\'"
+        #     else:
+        #         text_to_search = "\'%" + what.lower().strip() + "%\'"
+        #
+        #     if len(text_to_search) > 1:
+        #         where_ += '''unaccent(lower(''' + self.key_search + ''')) LIKE  unaccent(''' + text_to_search + ''') AND '''
+        #     else:
+        #         where_ += ''' unaccent(upper(''' + self.key_search + ''')) SIMILAR TO ''' + '''unaccent(''' + text_to_search.upper() + ')' + ''' AND '''
+        # elif  not self.tags_to_searchEdit.text() =='': # modo para tags
+        #     self.recordLimitEdt.setText('0')
+        #     tags = self.tags_to_searchEdit.text().replace("\'", "\\\'")
+        #     tags = tags.split(',')
+        #     in_data = ''
+        #     if self.logicTags.currentIndex() == 0:  # ou
+        #         for n in tags:
+        #             toto = n.lower().strip()
+        #             in_data += "unaccent(\'" + toto + "\'),"
+        #         a = dbmain.query_many(
+        #             '''select ta_id from tags where unaccent(ta_name) in (''' + in_data[:-1] + ''')''')
+        #         i = []
+        #         for t in a:
+        #             i.append(t[0])
+        #         if i:
+        #             i = str(i)
+        #             where_ += '''
+        #                  pu_id in(select * from (select tr_book from tag_ref where tr_tag in(''' + i[1:-1] + ''')) as foo) AND '''
+        #         else:
+        #             where_ += '''pu_id in(select * from (select tr_book from tag_ref where tr_tag in(-1)) as foo) AND '''
+        #     else:
+        #         t = ''
+        #         for n in tags:
+        #             t = t + "\'" + n.strip() + "\',"
+        #         t = t[:-1]
+        #         c = str(len(tags))
+        #         where_ = ''' where EXISTS (SELECT NULL
+        #          FROM tag_ref tg
+        #          JOIN TAGS t ON t.ta_id = tg.tr_tag
+        #         WHERE unaccent(t.ta_name) IN (unaccent(''' + t + '''))
+        #           AND tg.tr_book = livros.pu_id
+        #      GROUP BY tg.tr_book
+        #        HAVING COUNT(t.ta_name) =''' + c + ''') and '''
+        # else:  # não procura em nada
+        #     where_ += ''' livros.pu_status = status.st_id AND
+        #   authors.au_id = livros.pu_author_id AND
+        #   types.ty_id = livros.pu_type and '''
+        #     self.key_sort = self.sort_dic[self.sortByCbox.currentText().lower()]
+        #
+        # if self.types_filterCbox.currentIndex() != 0:
+        #     where_ += " livros.pu_type = (select ty_id from types where ty_name like \'" + str(
+        #         self.types_filterCbox.currentText()) + '\') and '
+        #
+        # if self.status_filterCbox.currentIndex() != 0:
+        #     where_ += " livros.pu_status = (select st_id from status where st_nome like \'" + str(
+        #         self.status_filterCbox.currentText()) + "\') and "
+        #
+        # order_ = ''' ORDER BY ''' + self.key_sort + ' asc '
+        #
+        # if int(gl.SHOW_RECORDS) > 0: #  int(self.recordLimitEdt.text()) > 0:
+        #     limit_ = 'LIMIT ' + gl.SHOW_RECORDS
+        #     order_ = ''' ORDER BY ''' + self.key_sort + ' asc '
+        # else:
+        #     self.recordLimitEdt.setText(gl.SHOW_RECORDS)
+        #     limit_ = 'LIMIT 99999'
+        # sql = select_ + where_ + join_ + order_ + limit_
+        # gl.CURRENT_SQL = sql
+
+        return ''
     
     def limit_change(self):
         gl.SHOW_RECORDS = self.recordLimitEdt.text()
@@ -526,57 +560,83 @@ class MainWindow(QMainWindow):
             self.recordLimitEdt.setText(gl.SHOW_RECORDS)
         data_access.save_param('SHOW_RECORDS', gl.SHOW_RECORDS)
         self.sortByCbox.setCurrentIndex(0)
-        self.types_filterCbox.setCurrentIndex(0)
+        self.typesCbox.setCurrentIndex(0)
         self.last_fiveBtn.setText('Ultimos ' + gl.SHOW_RECORDS)
         self.filter_click()
     
+    
+
+    
     def filter_click(self):
         foo = self.make_sql()
-        self.data_set = dbmain.query_many(foo)
-        gl.records_in_ds = len(self.data_set)
+        gl.FILTER_DATASET = dbmain.query_many(foo)
+        gl.records_in_ds = len(gl.FILTER_DATASET)
         self.update_grid()
-    
+        
+
+        
     def first_field_search_click(self):
         gl.records_in_ds = 0
         if not self.firstToSearchEdt.text() == '':
             # self.filter_click()
+            """limpa os outros campos"""
+            # self.secondToSearchEdt.clear()
+            # self.thirdToSearchEdt.clear()
             sql = self.make_sql(self.firstToSearchEdt.text(), self.firstSearchCbox.currentText())
-            self.data_set = dbmain.query_many(sql)
-            gl.records_in_ds = len(self.data_set)
+            gl.FILTER_DATASET = dbmain.query_many(sql)
+            gl.records_in_ds = len(gl.FILTER_DATASET)
             if gl.records_in_ds == 0:
                 # self.grid.clear()
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
-           
-    def second_field_search_click(self):
+    
+    def first_field_clear_click(self):
+        self.firstToSearchEdt.clear()
+        self.recordLimitEdt.setText(gl.SHOW_RECORDS)
+        self.last_records_click()
+        
+    def author_search_click(self):
         gl.records_in_ds = 0
-        if not self.secondToSearchEdt.text() == '':
-            sql = self.make_sql(self.secondToSearchEdt.text(), self.secondSearchCBox.currentText())
-            self.data_set = dbmain.query_many(sql)
-            gl.records_in_ds = len(self.data_set)
+        if not self.authorToSearchEdt.text() == '':
+            gl.LAST_SEARCH_WHERE = 1
+            # self.firstToSearchEdt.clear()
+            # self.localToSeachEdt.clear()
+            sql = lib_gabo.make_sql_author(self.authorToSearchEdt.text(), self.sortByCbox.currentText().lower(),
+                                           self.typesCbox.currentText().lower(), self.statusCbox.currentText().lower())
+            gl.FILTER_DATASET = dbmain.query_many(sql)
+            gl.records_in_ds = len(gl.FILTER_DATASET)
             if gl.records_in_ds == 0:
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
     
-    def third_field_search_click(self):
+    def local_search_click(self):
         gl.records_in_ds = 0
-        if not self.thirdToSearchEdt.text() == '':
-            sql = self.make_sql(self.thirdToSearchEdt.text(), self.thirdSearchCBox.currentText())
-            self.data_set = dbmain.query_many(sql)
-            gl.records_in_ds = len(self.data_set)
+        if not self.localToSeachEdt.text() == '':
+            gl.LAST_SEARCH_WHERE = 2
+            # self.firstToSearchEdt.clear()
+            # self.authorToSearchEdt.clear()
+            sql = lib_gabo.make_sql_local(self.localToSeachEdt.text(),self.sortByCbox.currentText().lower(),
+                                           self.typesCbox.currentText().lower(), self.statusCbox.currentText().lower() )
+            gl.FILTER_DATASET = dbmain.query_many(sql)
+            gl.records_in_ds = len(gl.FILTER_DATASET)
             if gl.records_in_ds == 0:
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
+    
+    def third_field_clear_click(self):
+        self.localToSeachEdt.clear()
+        self.recordLimitEdt.setText(gl.SHOW_RECORDS)
+        self.last_records_click()
     
     def search_tags_mode_click(self):
         if not self.tags_to_searchEdit.text() == '':
             self.firstToSearchEdt.setText('')
             sql = self.make_sql()
-            self.data_set = dbmain.query_many(sql)
-            if len(self.data_set) == 0:
+            gl.FILTER_DATASET = dbmain.query_many(sql)
+            if len(gl.FILTER_DATASET) == 0:
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
@@ -592,50 +652,55 @@ class MainWindow(QMainWindow):
         self.refresh_grid()
     
     def get_data(self):
-        sql = '''SELECT 
-          livros.pu_id, 
-          livros.pu_title, 
+        sql = '''SELECT
+          livros.pu_id,
+          livros.pu_title,
           authors.au_name,
           types.ty_name,
           status.st_nome,
           livros.pu_cota,livros.pu_volume, pu_ed_year
-        FROM 
+        FROM
           livros, authors, types, status
         WHERE
           livros.pu_status = status.st_id AND
-          authors.au_id = livros.pu_author_id AND 
+          authors.au_id = livros.pu_author_id AND
           types.ty_id = livros.pu_type
-        ORDER BY 
+        ORDER BY
           livros.pu_title ASC LIMIT 50;'''
         a = dbmain.query_many(sql)
-        self.data_set = a  # é global para que possa ser utilizado nos relatorios em html
-        return self.data_set
+        gl.FILTER_DATASET = a  # é global para que possa ser utilizado nos relatorios em html
+        return gl.FILTER_DATASET
     
     def grid_double_click(self):
         stack_current_row =self.grid.currentRow()
         form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', isbn=False)
         form.exec_()
-        if not self.firstToSearchEdt.text() == '':
-            self.recordLimitEdt.setText('999')
-            foo = self.make_sql()
-            self.data_set = dbmain.query_many(foo)
-            self.update_grid()
-        elif not self.tags_to_searchEdit.text() == '':
-            foo = self.make_sql()
-            self.data_set = dbmain.query_many(foo)
-            self.update_grid()
-        else:
-            self.last_records_click()
-        self.grid.setCurrentCell(stack_current_row,0)
+        # if not self.firstToSearchEdt.text() == '':
+        #     # self.recordLimitEdt.setText('999')
+        #     foo = self.make_sql(self.firstToSearchEdt.text(), self.firstSearchCbox.currentText())
+        # elif not self.authorToSearchEdt.text() == '':
+        #     foo = self.make_sql(self.authorToSearchEdt.text(), self.authorSearchBtn.currentText())
+        #     gl.FILTER_DATASET = dbmain.query_many(foo)
+        #     self.update_grid()
+        # elif not self.localToSeachEdt.text() == '':
+        #     foo = self.make_sql(self.localToSeachEdt.text(), self.localSearchBtn.currentText())
+        #     gl.FILTER_DATASET = dbmain.query_many(foo)
+        #     self.update_grid()
+        # elif not self.tags_to_searchEdit.text() == '':
+        #     foo = self.make_sql()
+        #     gl.FILTER_DATASET = dbmain.query_many(foo)
+        #     self.update_grid()
+        # else:
+        #     self.last_records_click()
+        # self.grid.setCurrentCell(stack_current_row,0)
         
     def refresh_search(self):
         pass
     
-    def clear_field_search(self):
-        self.firstToSearchEdt.clear()
+    def second_field_clear_click(self):
+        self.authorToSearchEdt.clear()
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
         self.last_records_click()
-        # self.update_grid(self.get_data())
     
     def clear_tags_search(self):
         self.tags_to_searchEdit.clear()
@@ -643,7 +708,7 @@ class MainWindow(QMainWindow):
     def update_grid(self):
         ex_grid.ex_grid_update(self.grid, {0: ['Num', 'i'], 1: ['Titulo', 's'], 2: ['Autor', 's'], 3: ['Tipo', 's'],
                                            4: ['Estado', 's'], 5: ['Cota', 's'], 6: ['Vol.', 'i'], 7: ['Ano', 'i']},
-                               self.data_set)
+                               gl.FILTER_DATASET)
         self.grid.setColumnWidth(0, 50)
         self.grid.setColumnWidth(1, 450)
         self.grid.setColumnWidth(2, 250)
