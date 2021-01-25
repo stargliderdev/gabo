@@ -80,47 +80,32 @@ class MainWindow(QMainWindow):
         mainLayout = QVBoxLayout(self.centralwidget)
         # barra de pesquisa
         """ primeira pesquisa"""
-        self.firstSearchCbox = QComboBox()
-        self.firstSearchCbox.setMaximumWidth(90)
-        self.firstSearchCbox.setMinimumWidth(90)
-        self.firstSearchCbox.addItems(['apaga', 'Titulo', 'ISBN', 'tag'])
-        self.firstSearchCbox.setCurrentIndex(1)
+        self.mainSearchCbox = QComboBox()
+        self.mainSearchCbox.setMaximumWidth(90)
+        self.mainSearchCbox.setMinimumWidth(90)
+        self.mainSearchCbox.addItems(['Titulo', 'ISBN', 'tag'])
+        self.mainSearchCbox.setCurrentIndex(0)
         
-        self.firstToSearchEdt = QLineEdit()
-        self.firstToSearchEdt.setMaximumWidth(300)
-        self.firstToSearchEdt.setMinimumWidth(300)
+        self.mainToSearchEdt = QLineEdit()
+        self.mainToSearchEdt.setMaximumWidth(300)
+        self.mainToSearchEdt.setMinimumWidth(300)
 
-        firstSearchBtn = QToolButton()
-        firstSearchBtn.setToolTip('Pesquisa texto')
-        firstSearchBtn.setIcon(QIcon('./img/search.png'))
+        mainSearchBtn = QToolButton()
+        mainSearchBtn.setToolTip('Pesquisa texto')
+        mainSearchBtn.setIcon(QIcon('./img/search.png'))
         # self.set_icon_size(firstSearchBtn)
-        firstSearchBtn.clicked.connect(self.first_field_search_click)
+        mainSearchBtn.clicked.connect(self.main_search_click)
         
-        firstClearBtn = QToolButton()
-        firstClearBtn.setToolTip('Limpa Pesquisa')
-        firstClearBtn.setIcon(QIcon('./img/clear.png'))
+        mainSearchClearBtn = QToolButton()
+        mainSearchClearBtn.setToolTip('Limpa Pesquisa')
+        mainSearchClearBtn.setIcon(QIcon('./img/clear.png'))
         # self.set_icon_size(firstSearchBtn)
-        firstSearchBtn.clicked.connect(self.first_field_clear_click)
+        # mainSearchBtn.clicked.connect(self.main_search_clear_click)
         
-        # """ segunda pesquisa"""
-        # self.authorSearchBtn = QPushButton('Autor')
-        # self.authorSearchBtn.setMaximumWidth(90)
-        # self.authorSearchBtn.setMinimumWidth(90)
-        # self.authorToSearchEdt = QLineEdit()
-        # self.authorToSearchEdt.setMaximumWidth(300)
-        # self.authorToSearchEdt.setMinimumWidth(300)
-        # self.authorSearchBtn.clicked.connect(self.author_search_click)
         authorsBtn = QToolButton()
         authorsBtn.setToolTip('Autores')
         authorsBtn.setIcon(QIcon('./img/authors.png'))
         authorsBtn.clicked.connect(self.authors_click)
-        # self.authorSearchBtn.addItems(['Autor', 'Titulo', 'ISBN', 'Cota/Local'])
-        # self.authorSearchBtn.setCurrentIndex(0)
-        # secondSearchBtn = QToolButton()
-        # secondSearchBtn.setToolTip('Pesquisa texto')
-        # secondSearchBtn.setIcon(QIcon('./img/search.png'))
-        # self.set_icon_size(secondSearchBtn)
-        
 
         secondClearBtn = QToolButton()
         secondClearBtn.setToolTip('Limpa Pesquisa')
@@ -128,33 +113,10 @@ class MainWindow(QMainWindow):
         # self.set_icon_size(secondClearBtn)
         secondClearBtn.clicked.connect(self.second_field_clear_click)
         
-        # """ terceira pesquisa"""
-        # self.localSearchBtn = QPushButton('Local')
-        # self.localSearchBtn.setMaximumWidth(90)
-        # self.localSearchBtn.setMinimumWidth(90)
-        # self.localSearchBtn.clicked.connect(self.local_search_click)
-        #
-        # self.localToSeachEdt = QLineEdit()
-        # self.localToSeachEdt.setMaximumWidth(90)
-        # self.localToSeachEdt.setMinimumWidth(90)
         cotasBtn = QToolButton()
         cotasBtn.setToolTip('Cotas Locais')
         cotasBtn.setIcon(QIcon('./img/locals.png'))
         cotasBtn.clicked.connect(self.locals_click)
-        # cotasBtn.setText('Cotas')
-        # self.localSearchBtn.addItems(['Autor', 'Titulo', 'ISBN', 'Cota/Local'])
-        # self.localSearchBtn.setCurrentIndex(3)
-        # thirdSearchBtn = QToolButton()
-        # thirdSearchBtn.setToolTip('Pesquisa texto')
-        # thirdSearchBtn.setIcon(QIcon('./img/search.png'))
-        # self.set_icon_size(thirdSearchBtn)
-
-        # thirdClearBtn = QToolButton()
-        # thirdClearBtn.setToolTip('Limpa Pesquisa')
-        # thirdClearBtn.setIcon(QIcon('./img/clear.png'))
-        # self.set_icon_size(thirdClearBtn)
-        # thirdClearBtn.clicked.connect(self.third_field_clear_click)
-        
         
         search_tags_Btn = QToolButton()
         search_tags_Btn.setToolTip('Pesquisa tags')
@@ -167,12 +129,7 @@ class MainWindow(QMainWindow):
         clear_tags_Btn.setIcon(QIcon('./img/clear.png'))
         # self.set_icon_size(clear_tags_Btn)
         clear_tags_Btn.clicked.connect(self.clear_tags_search)
-        
-        # self.logicTags = QComboBox()
-        # self.logicTags.setMaximumWidth(90)
-        # self.logicTags.setMinimumWidth(90)
-        # self.logicTags.addItems(['OU', 'E'])
-        # self.tags_to_searchEdit = QLineEdit()
+
         self.tags_browserBtn = QToolButton()
         self.tags_browserBtn.setToolTip('Gere Etiquetas')
         self.tags_browserBtn.setIcon(QIcon('./img/tags.png'))
@@ -191,14 +148,6 @@ class MainWindow(QMainWindow):
         self.addBookBtn = QPushButton()
         self.addBookBtn.setToolTip('Adicionar Livro')
         self.addBookBtn.setIcon(QIcon('./img/addbook.png'))
-        
-        # drop tools menu
-        # toolsDropMenu = QMenu()
-        # deletedAction = QAction('Ver Apagados', self)
-        # deletedAction.triggered.connect(self.show_delete_click)
-        # toolsDropMenu.addAction(deletedAction)
-        # toolsBtn = QPushButton('Ferramentas')
-        # toolsBtn.setMenu(toolsDropMenu)
         
         printBtn = QToolButton()
         printBtn.setIcon(QIcon('./img/print.png'))
@@ -260,9 +209,9 @@ class MainWindow(QMainWindow):
             [bookAddBtn, bookAddIsbnBtn, self.last_fiveBtn, double1_Btn, clone_Btn,  printBtn, True,
              aboutBtn, closeBtn]))
         mainLayout.addLayout(qlib.addHLayout(
-            [self.firstSearchCbox, self.firstToSearchEdt, firstSearchBtn, firstClearBtn, self.tags_browserBtn,authorsBtn, cotasBtn,
-              widthSumBtn,  True,'Ordena:', self.sortByCbox, 'Tipos', self.typesCbox, 'Estado', self.statusCbox,
-                                              True, True,'Resultados', self.recordLimitEdt]))
+            [self.mainSearchCbox, self.mainToSearchEdt, mainSearchBtn, mainSearchClearBtn, self.tags_browserBtn, authorsBtn, cotasBtn,
+             widthSumBtn, True,'Ordena:', self.sortByCbox, 'Tipos', self.typesCbox, 'Estado', self.statusCbox,
+             True, True,'Resultados', self.recordLimitEdt]))
              
         
         mainLayout.addLayout(qlib.addHLayout(['AUTOR:eça,POR:nenhum,TIPO:todos,ESTADO:todos',True], 400))
@@ -306,6 +255,7 @@ class MainWindow(QMainWindow):
         self.filter_cbox_change()
         
     def filter_cbox_change(self):
+        
         gl.SEARCH_DICT.update(self.filter_options())
         sql = lib_gabo.make_sql(gl.SEARCH_DICT)
         gl.FILTER_DATASET = dbmain.query_many(sql)
@@ -317,17 +267,19 @@ class MainWindow(QMainWindow):
     
     
     def author_pub_click(self):
-        a = self.grid.item(self.grid.currentRow(), 2).text()
-        self.firstToSearchEdt.setText(a)
-        self.firstSearchCbox.setCurrentIndex(0)
-        # self.filter_click()
-        self.first_field_search_click()
+        # a = self.grid.item(self.grid.currentRow(), 2).text()
+        # self.mainToSearchEdt.setText(a)
+        # self.mainSearchCbox.setCurrentIndex(0)
+        # # self.filter_click()
+        # self.main_search_click()
+        pass
+
         
     def local_pub_click(self):
         try:
             a = self.grid.item(self.grid.currentRow(), 5).text()
-            self.firstToSearchEdt.setText(a)
-            self.firstSearchCbox.setCurrentIndex(3)
+            self.mainToSearchEdt.setText(a)
+            self.mainSearchCbox.setCurrentIndex(3)
             self.filter_click()
         except AttributeError:
             pass
@@ -337,7 +289,7 @@ class MainWindow(QMainWindow):
         form.exec_()
         if not form.tag_list == []:
             self.tags_to_searchEdit.setText(form.tag_list)
-            self.firstToSearchEdt.clear()
+            self.mainToSearchEdt.clear()
     
     def double1_click(self):
         # duplica normal
@@ -375,6 +327,19 @@ class MainWindow(QMainWindow):
                 
     
     def filter_options(self):
+        try:
+            del gl.SEARCH_DICT['ORDER']
+        except KeyError:
+            pass
+        try:
+            del gl.SEARCH_DICT['TYPE']
+        except KeyError:
+            pass
+        try:
+            del gl.SEARCH_DICT['STATUS']
+        except KeyError:
+            pass
+    
         l_dict = {}
         if self.sortByCbox.currentIndex() == 0:
             pass
@@ -433,7 +398,7 @@ class MainWindow(QMainWindow):
     
     def last_records_click(self):
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
-        self.firstSearchCbox.setCurrentIndex(1)
+        self.mainSearchCbox.setCurrentIndex(0)
         # self.firstToSearchEdt.setText('')
         # self.tags_to_searchEdit.setText('')
         self.typesCbox.setCurrentIndex(0)
@@ -479,13 +444,14 @@ class MainWindow(QMainWindow):
         self.update_grid()
     
     def refresh_grid(self):
-        """refresh grid by filters"""
-        """ if filter empty go to last records"""
-        self.first_field_search_click()
-        if gl.records_in_ds == 0:
-            self.search_tags_mode_click()
-        if gl.records_in_ds == 0:
-            self.last_records_click()
+        # """refresh grid by filters"""
+        # """ if filter empty go to last records"""
+        # self.main_search_click()
+        # if gl.records_in_ds == 0:
+        #     self.search_tags_mode_click()
+        # if gl.records_in_ds == 0:
+        #     self.last_records_click()
+        pass
     
     def about_click(self):
         bc = """<!DOCTYPE html><html lang="pt_pt"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -608,26 +574,25 @@ class MainWindow(QMainWindow):
         gl.records_in_ds = len(gl.FILTER_DATASET)
         self.update_grid()
         
-
-        
-    def first_field_search_click(self):
-        gl.records_in_ds = 0
-        if not self.firstToSearchEdt.text() == '':
-            # self.filter_click()
-            """limpa os outros campos"""
-            # self.secondToSearchEdt.clear()
-            # self.thirdToSearchEdt.clear()
-            sql = self.make_sql(self.firstToSearchEdt.text(), self.firstSearchCbox.currentText())
+    def main_search_click(self):
+        if not self.mainToSearchEdt.text() == '':
+            print(self.mainSearchCbox.currentText())
+            if self.mainSearchCbox.currentIndex() == 0:
+                gl.SEARCH_DICT = {'WHERE': 'title', 'WHAT': self.mainToSearchEdt.text()}
+            elif self.mainSearchCbox.currentIndex() == 1:
+                gl.SEARCH_DICT = {'WHERE': 'isbn', 'WHAT': self.mainToSearchEdt.text()}
+            gl.SEARCH_DICT.update(self.filter_options())
+            sql = lib_gabo.make_sql(gl.SEARCH_DICT)           
             gl.FILTER_DATASET = dbmain.query_many(sql)
             gl.records_in_ds = len(gl.FILTER_DATASET)
             if gl.records_in_ds == 0:
-                # self.grid.clear()
                 self.grid.setRowCount(0)
             else:
                 self.update_grid()
+
     
-    def first_field_clear_click(self):
-        self.firstToSearchEdt.clear()
+    def main_search_clear_click(self):
+        self.mainToSearchEdt.clear()
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
         self.last_records_click()
         
@@ -647,20 +612,20 @@ class MainWindow(QMainWindow):
     #         else:
     #             self.update_grid()
     
-    def local_search_click(self):
-        gl.records_in_ds = 0
-        if not self.localToSeachEdt.text() == '':
-            gl.LAST_SEARCH_WHERE = 2
-            # self.firstToSearchEdt.clear()
-            # self.authorToSearchEdt.clear()
-            sql = lib_gabo.make_sql_local(self.localToSeachEdt.text(),self.sortByCbox.currentText().lower(),
-                                           self.typesCbox.currentText().lower(), self.statusCbox.currentText().lower() )
-            gl.FILTER_DATASET = dbmain.query_many(sql)
-            gl.records_in_ds = len(gl.FILTER_DATASET)
-            if gl.records_in_ds == 0:
-                self.grid.setRowCount(0)
-            else:
-                self.update_grid()
+    # def local_search_click(self):
+    #     gl.records_in_ds = 0
+    #     if not self.localToSeachEdt.text() == '':
+    #         gl.LAST_SEARCH_WHERE = 2
+    #         # self.firstToSearchEdt.clear()
+    #         # self.authorToSearchEdt.clear()
+    #         sql = lib_gabo.make_sql_local(self.localToSeachEdt.text(),self.sortByCbox.currentText().lower(),
+    #                                        self.typesCbox.currentText().lower(), self.statusCbox.currentText().lower() )
+    #         gl.FILTER_DATASET = dbmain.query_many(sql)
+    #         gl.records_in_ds = len(gl.FILTER_DATASET)
+    #         if gl.records_in_ds == 0:
+    #             self.grid.setRowCount(0)
+    #         else:
+    #             self.update_grid()
     
     def third_field_clear_click(self):
         self.localToSeachEdt.clear()
@@ -669,7 +634,7 @@ class MainWindow(QMainWindow):
     
     def search_tags_mode_click(self):
         if not self.tags_to_searchEdit.text() == '':
-            self.firstToSearchEdt.setText('')
+            self.mainToSearchEdt.setText('')
             sql = self.make_sql()
             gl.FILTER_DATASET = dbmain.query_many(sql)
             if len(gl.FILTER_DATASET) == 0:
