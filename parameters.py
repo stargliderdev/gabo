@@ -32,4 +32,5 @@ types_dic = {'todos': ''}
 """where was last search 1:author, 2:local"""
 LAST_SEARCH_WHERE:int = 1
 FILTER_DATASET = []
+SEARCH_DICT = {}
 

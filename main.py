@@ -93,23 +93,23 @@ class MainWindow(QMainWindow):
         firstSearchBtn = QToolButton()
         firstSearchBtn.setToolTip('Pesquisa texto')
         firstSearchBtn.setIcon(QIcon('./img/search.png'))
-        self.set_icon_size(firstSearchBtn)
+        # self.set_icon_size(firstSearchBtn)
         firstSearchBtn.clicked.connect(self.first_field_search_click)
         
         firstClearBtn = QToolButton()
         firstClearBtn.setToolTip('Limpa Pesquisa')
         firstClearBtn.setIcon(QIcon('./img/clear.png'))
-        self.set_icon_size(firstSearchBtn)
+        # self.set_icon_size(firstSearchBtn)
         firstSearchBtn.clicked.connect(self.first_field_clear_click)
         
-        """ segunda pesquisa"""
-        self.authorSearchBtn = QPushButton('Autor')
-        self.authorSearchBtn.setMaximumWidth(90)
-        self.authorSearchBtn.setMinimumWidth(90)
-        self.authorToSearchEdt = QLineEdit()
-        self.authorToSearchEdt.setMaximumWidth(300)
-        self.authorToSearchEdt.setMinimumWidth(300)
-        self.authorSearchBtn.clicked.connect(self.author_search_click)
+        # """ segunda pesquisa"""
+        # self.authorSearchBtn = QPushButton('Autor')
+        # self.authorSearchBtn.setMaximumWidth(90)
+        # self.authorSearchBtn.setMinimumWidth(90)
+        # self.authorToSearchEdt = QLineEdit()
+        # self.authorToSearchEdt.setMaximumWidth(300)
+        # self.authorToSearchEdt.setMinimumWidth(300)
+        # self.authorSearchBtn.clicked.connect(self.author_search_click)
         authorsBtn = QToolButton()
         authorsBtn.setToolTip('Autores')
         authorsBtn.setIcon(QIcon('./img/authors.png'))
@@ -125,20 +125,20 @@ class MainWindow(QMainWindow):
         secondClearBtn = QToolButton()
         secondClearBtn.setToolTip('Limpa Pesquisa')
         secondClearBtn.setIcon(QIcon('./img/clear.png'))
-        self.set_icon_size(secondClearBtn)
+        # self.set_icon_size(secondClearBtn)
         secondClearBtn.clicked.connect(self.second_field_clear_click)
         
-        """ terceira pesquisa"""
-        self.localSearchBtn = QPushButton('Local')
-        self.localSearchBtn.setMaximumWidth(90)
-        self.localSearchBtn.setMinimumWidth(90)
-        self.localSearchBtn.clicked.connect(self.local_search_click)
-        
-        self.localToSeachEdt = QLineEdit()
-        self.localToSeachEdt.setMaximumWidth(90)
-        self.localToSeachEdt.setMinimumWidth(90)
+        # """ terceira pesquisa"""
+        # self.localSearchBtn = QPushButton('Local')
+        # self.localSearchBtn.setMaximumWidth(90)
+        # self.localSearchBtn.setMinimumWidth(90)
+        # self.localSearchBtn.clicked.connect(self.local_search_click)
+        #
+        # self.localToSeachEdt = QLineEdit()
+        # self.localToSeachEdt.setMaximumWidth(90)
+        # self.localToSeachEdt.setMinimumWidth(90)
         cotasBtn = QToolButton()
-        cotasBtn.setToolTip('Limpa Pesquisa')
+        cotasBtn.setToolTip('Cotas Locais')
         cotasBtn.setIcon(QIcon('./img/locals.png'))
         cotasBtn.clicked.connect(self.locals_click)
         # cotasBtn.setText('Cotas')
@@ -149,23 +149,23 @@ class MainWindow(QMainWindow):
         # thirdSearchBtn.setIcon(QIcon('./img/search.png'))
         # self.set_icon_size(thirdSearchBtn)
 
-        thirdClearBtn = QToolButton()
-        thirdClearBtn.setToolTip('Limpa Pesquisa')
-        thirdClearBtn.setIcon(QIcon('./img/clear.png'))
-        self.set_icon_size(thirdClearBtn)
-        thirdClearBtn.clicked.connect(self.third_field_clear_click)
+        # thirdClearBtn = QToolButton()
+        # thirdClearBtn.setToolTip('Limpa Pesquisa')
+        # thirdClearBtn.setIcon(QIcon('./img/clear.png'))
+        # self.set_icon_size(thirdClearBtn)
+        # thirdClearBtn.clicked.connect(self.third_field_clear_click)
         
         
         search_tags_Btn = QToolButton()
         search_tags_Btn.setToolTip('Pesquisa tags')
         search_tags_Btn.setIcon(QIcon('./img/search_tags.png'))
-        self.set_icon_size(search_tags_Btn)
+        # self.set_icon_size(search_tags_Btn)
         search_tags_Btn.clicked.connect(self.search_tags_mode_click)
         
         clear_tags_Btn = QToolButton()
         clear_tags_Btn.setToolTip('Limpa Tags')
         clear_tags_Btn.setIcon(QIcon('./img/clear.png'))
-        self.set_icon_size(clear_tags_Btn)
+        # self.set_icon_size(clear_tags_Btn)
         clear_tags_Btn.clicked.connect(self.clear_tags_search)
         
         # self.logicTags = QComboBox()
@@ -176,7 +176,7 @@ class MainWindow(QMainWindow):
         self.tags_browserBtn = QToolButton()
         self.tags_browserBtn.setToolTip('Gere Etiquetas')
         self.tags_browserBtn.setIcon(QIcon('./img/tags.png'))
-        self.set_icon_size(self.tags_browserBtn)
+        # self.set_icon_size(self.tags_browserBtn)
         self.tags_browserBtn.clicked.connect(self.tags_browser_click)
         
         # drop add menu
@@ -202,7 +202,7 @@ class MainWindow(QMainWindow):
         
         printBtn = QToolButton()
         printBtn.setIcon(QIcon('./img/print.png'))
-        self.set_icon_size(printBtn)
+        # self.set_icon_size(printBtn)
         printBtn.clicked.connect(self.print_click)
         
         self.last_fiveBtn = QPushButton()
@@ -220,13 +220,13 @@ class MainWindow(QMainWindow):
         aboutBtn = QToolButton()
         aboutBtn.setToolTip('Acerca')
         aboutBtn.setIcon(QIcon('./img/info.png'))
-        self.set_icon_size(aboutBtn)
+        # self.set_icon_size(aboutBtn)
         aboutBtn.clicked.connect(self.about_click)
         
         closeBtn = QToolButton()
         closeBtn.setToolTip('Sair')
         closeBtn.setIcon(QIcon('./img/close.png'))
-        self.set_icon_size(closeBtn)
+        # self.set_icon_size(closeBtn)
         closeBtn.clicked.connect(self.closeBtn_click)
         
         self.sortByCbox = QComboBox()
@@ -252,7 +252,7 @@ class MainWindow(QMainWindow):
         widthSumBtn = QToolButton()
         widthSumBtn.setToolTip('Sair')
         widthSumBtn.setIcon(QIcon('./img/width_sigma.png'))
-        self.set_icon_size(widthSumBtn)
+        # self.set_icon_size(widthSumBtn)
         widthSumBtn.clicked.connect(self.width_sum_click)
         
         
@@ -260,15 +260,12 @@ class MainWindow(QMainWindow):
             [bookAddBtn, bookAddIsbnBtn, self.last_fiveBtn, double1_Btn, clone_Btn,  printBtn, True,
              aboutBtn, closeBtn]))
         mainLayout.addLayout(qlib.addHLayout(
-            [self.firstSearchCbox, self.firstToSearchEdt, firstSearchBtn, firstClearBtn, self.tags_browserBtn,authorsBtn
-             , self.authorToSearchEdt,self.authorSearchBtn , secondClearBtn,cotasBtn,
-              self.localToSeachEdt, self.localSearchBtn,widthSumBtn, thirdClearBtn, True]))
-             
-        # mainLayout.addLayout(qlib.addHLayout(
-        #     [self.logicTags, self.tags_to_searchEdit, self.tags_browserBtn, search_tags_Btn, clear_tags_Btn, True]))
-        
-        mainLayout.addLayout(qlib.addHLayout(['Ordena:', self.sortByCbox, 'Tipos', self.typesCbox, 'Estado', self.statusCbox,
+            [self.firstSearchCbox, self.firstToSearchEdt, firstSearchBtn, firstClearBtn, self.tags_browserBtn,authorsBtn, cotasBtn,
+              widthSumBtn,  True,'Ordena:', self.sortByCbox, 'Tipos', self.typesCbox, 'Estado', self.statusCbox,
                                               True, True,'Resultados', self.recordLimitEdt]))
+             
+        
+        mainLayout.addLayout(qlib.addHLayout(['AUTOR:eça,POR:nenhum,TIPO:todos,ESTADO:todos',True], 400))
         
         # grid
         self.grid = QTableWidget(self)
@@ -300,22 +297,24 @@ class MainWindow(QMainWindow):
             pass
     
     def sort_by_change(self):
-        if gl.LAST_SEARCH_WHERE ==1:
-            self.author_search_click()
-        elif gl.LAST_SEARCH_WHERE == 2:
-            self.local_search_click()
+        self.filter_cbox_change()
     
     def types_change(self):
-        if gl.LAST_SEARCH_WHERE ==1:
-            self.author_search_click()
-        elif gl.LAST_SEARCH_WHERE == 2:
-            self.local_search_click()
+        self.filter_cbox_change()
     
     def status_change(self):
-        if gl.LAST_SEARCH_WHERE ==1:
-            self.author_search_click()
-        elif gl.LAST_SEARCH_WHERE == 2:
-            self.local_search_click()
+        self.filter_cbox_change()
+        
+    def filter_cbox_change(self):
+        gl.SEARCH_DICT.update(self.filter_options())
+        sql = lib_gabo.make_sql(gl.SEARCH_DICT)
+        gl.FILTER_DATASET = dbmain.query_many(sql)
+        gl.records_in_ds = len(gl.FILTER_DATASET)
+        if gl.records_in_ds == 0:
+            self.grid.setRowCount(0)
+        else:
+            self.update_grid()
+    
     
     def author_pub_click(self):
         a = self.grid.item(self.grid.currentRow(), 2).text()
@@ -359,18 +358,54 @@ class MainWindow(QMainWindow):
         form.exec_()
         if form.toto != '':
             # self.aut.setCurrentIndex(0)
-            self.authorToSearchEdt.setText(form.toto)
-            self.author_search_click()
+            # self.authorToSearchEdt.setText(form.toto)
+            # self.author_search_click()
+            gl.records_in_ds = 0
+        
+            gl.LAST_SEARCH_WHERE = 1
+            gl.SEARCH_DICT = {'WHERE': 'author', 'WHAT': form.toto}
+            gl.SEARCH_DICT.update(self.filter_options())
+            sql = lib_gabo.make_sql(gl.SEARCH_DICT)
+            gl.FILTER_DATASET = dbmain.query_many(sql)
+            gl.records_in_ds = len(gl.FILTER_DATASET)
+            if gl.records_in_ds == 0:
+                self.grid.setRowCount(0)
+            else:
+                self.update_grid()
+                
+    
+    def filter_options(self):
+        l_dict = {}
+        if self.sortByCbox.currentIndex() == 0:
+            pass
+        else:
+            l_dict['ORDER'] = self.sortByCbox.currentText()
+        if self.typesCbox.currentIndex() == 0:
+            pass
+        else:
+            l_dict['TYPE'] = self.typesCbox.currentText()
+        if self.statusCbox.currentIndex() == 0:
+            pass
+        else:
+            l_dict['STATUS'] = self.statusCbox.currentText()
+        return l_dict
     
     def locals_click(self):
         form = locals.BrowserLocals()
         form.exec_()
         if not form.toto == '':
-            # self.firstToSearchEdt.clear()
-            # self.authorToSearchEdt.clear()
-            self.localToSeachEdt.setText(form.toto)
-            self.local_search_click()
-    
+            gl.records_in_ds = 0
+            gl.LAST_SEARCH_WHERE = 1
+            gl.SEARCH_DICT = {'WHERE': 'local', 'WHAT': form.toto}
+            gl.SEARCH_DICT.update(self.filter_options())
+            sql = lib_gabo.make_sql(gl.SEARCH_DICT)
+            gl.FILTER_DATASET = dbmain.query_many(sql)
+            gl.records_in_ds = len(gl.FILTER_DATASET)
+            if gl.records_in_ds == 0:
+                self.grid.setRowCount(0)
+            else:
+                self.update_grid()
+
     def width_sum_click(self):
         # self.local_search_click()
         # lib_gabo.calc_width_in_filter()
@@ -596,20 +631,21 @@ class MainWindow(QMainWindow):
         self.recordLimitEdt.setText(gl.SHOW_RECORDS)
         self.last_records_click()
         
-    def author_search_click(self):
-        gl.records_in_ds = 0
-        if not self.authorToSearchEdt.text() == '':
-            gl.LAST_SEARCH_WHERE = 1
-            # self.firstToSearchEdt.clear()
-            # self.localToSeachEdt.clear()
-            sql = lib_gabo.make_sql_author(self.authorToSearchEdt.text(), self.sortByCbox.currentText().lower(),
-                                           self.typesCbox.currentText().lower(), self.statusCbox.currentText().lower())
-            gl.FILTER_DATASET = dbmain.query_many(sql)
-            gl.records_in_ds = len(gl.FILTER_DATASET)
-            if gl.records_in_ds == 0:
-                self.grid.setRowCount(0)
-            else:
-                self.update_grid()
+    # def author_search_click(self):
+    #     gl.records_in_ds = 0
+    #     if not self.authorToSearchEdt.text() == '':
+    #         gl.LAST_SEARCH_WHERE = 1
+    #         # self.firstToSearchEdt.clear()
+    #         # self.localToSeachEdt.clear()
+    #         # sql = lib_gabo.make_sql_author(self.authorToSearchEdt.text(), self.sortByCbox.currentText().lower(),
+    #         #                                self.typesCbox.currentText().lower(), self.statusCbox.currentText().lower())
+    #         sql = lib_gabo.make_sql({'WHERE':'author', 'WHAT': })
+    #         gl.FILTER_DATASET = dbmain.query_many(sql)
+    #         gl.records_in_ds = len(gl.FILTER_DATASET)
+    #         if gl.records_in_ds == 0:
+    #             self.grid.setRowCount(0)
+    #         else:
+    #             self.update_grid()
     
     def local_search_click(self):
         gl.records_in_ds = 0

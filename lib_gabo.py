@@ -131,30 +131,31 @@ def make_sql(what='', where_index='nada', sort_by=''):
 
 def make_sql_author(what='', order_by='nada', pub_type='todos', pub_status='todos'):
     gl.CURRENT_SQL = ''
-    select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros "
-    join_ = '''inner join authors on au_id=pu_author_id
-               inner join types on ty_id=pu_type
-               inner join status on st_id=pu_status'''
-    where_ = []
-    order_ = ''
-    if not what == '':
-        text_to_search = "\'%" + what.lower().strip() + "%\'"
-        if len(text_to_search) > 1:
-            where_.append('''unaccent(lower(authors.au_name)) LIKE  unaccent(''' + text_to_search + ''')''')
-    if pub_type == 'todos':
-        pass
-    else:
-        where_.append(
-            ''' livros.pu_type = (select ty_id from types where lower(ty_name) like \'''' + pub_type.lower() + '''\')''')
-    if pub_status == 'todos':
-        pass
-    else:
-        where_.append(" livros.pu_status = (select st_id from status where lower(st_nome) like \'" + pub_status + '\')')
-    where_ = create_sql_where(where_)
-    
-    order_ = ''' ORDER BY ''' + gl.sort_dic[order_by.lower()] + ' asc '
-    sql = select_ + join_ + where_ + order_
-    gl.CURRENT_SQL = sql
+    # select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros "
+    # join_ = '''inner join authors on au_id=pu_author_id
+    #            inner join types on ty_id=pu_type
+    #            inner join status on st_id=pu_status'''
+    # where_ = []
+    # order_ = ''
+    # if not what == '':
+    #     text_to_search = "\'%" + what.lower().strip() + "%\'"
+    #     if len(text_to_search) > 1:
+    #         where_.append('''unaccent(lower(authors.au_name)) LIKE  unaccent(''' + text_to_search + ''')''')
+    # if pub_type == 'todos':
+    #     pass
+    # else:
+    #     where_.append(
+    #         ''' livros.pu_type = (select ty_id from types where lower(ty_name) like \'''' + pub_type.lower() + '''\')''')
+    # if pub_status == 'todos':
+    #     pass
+    # else:
+    #     where_.append(" livros.pu_status = (select st_id from status where lower(st_nome) like \'" + pub_status + '\')')
+    # where_ = create_sql_where(where_)
+    #
+    # order_ = '' #''' ORDER BY ''' + gl.sort_dic[order_by.lower()] + ' asc '
+    # sql = select_ + join_ +  + order_
+    # gl.CURRENT_SQL = sql
+    sql = ''
     return sql
 
 
@@ -190,7 +191,39 @@ def make_sql_local(what='', order_by='nada', pub_type='todos', pub_status='todos
     gl.CURRENT_SQL = sql
     return sql
 
-
+def make_sql(command_dict):
+    print(command_dict)
+    gl.CURRENT_SQL = ''
+    select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros "
+    join_ = ''' inner join authors on au_id=pu_author_id
+                   inner join types on ty_id=pu_type
+                   inner join status on st_id=pu_status'''
+    where_ = []
+    order_ = ''
+    if command_dict['WHERE'] == 'author':
+        if not command_dict['WHAT'] == '':
+            text_to_search = "\'%" + command_dict['WHAT'].lower().strip() + "%\'"
+            where_.append('''unaccent(lower(authors.au_name)) LIKE  unaccent(''' + text_to_search + ''')''')
+    elif command_dict['WHERE'] == 'local':
+        text_to_search = "\'" + command_dict['WHAT'].lower().strip() + "\'"
+        where_.append('''(lower(pu_cota)) LIKE  ''' + text_to_search )
+    """ generic filter """
+    try:
+        where_.append(" livros.pu_type = (select ty_id from types where lower(ty_name) like \'" + command_dict['TYPE'].lower() + '\')')
+    except KeyError:
+        pass
+    try:
+        order_ = ''' ORDER BY ''' + gl.sort_dic[command_dict['ORDER'].lower()] + ' asc '
+    except KeyError:
+        pass
+    try:
+        where_.append(" livros.pu_status = (select st_id from status where lower(st_nome) like \'" + command_dict['STATUS'] + '\')')
+    except KeyError:
+        pass
+    sql = select_ + join_ + create_sql_where(where_) + order_
+    gl.CURRENT_SQL = sql
+    return sql
+    
 def create_sql_where(input_list):
     output_sql = ' WHERE '
     output_sql += ' AND '.join(input_list)
