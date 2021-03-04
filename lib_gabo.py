@@ -12,9 +12,9 @@ def calc_width_in_filter():
     dimentions = []
     for n in xl:
         sql = '''select ta_name, livros.pu_title
-         from tag_ref
-         left join livros on tag_ref.tr_book = livros.pu_id
-         left  join tags on ta_id=tag_ref.tr_tag
+         from tags_reference
+         left join livros on tags_reference.tags_ref_book = livros.pu_id
+         left  join tags on ta_id=tags_reference.tags_ref_tag_id
         where livros.pu_id =''' + str(n[0]) + ''' and ta_name like \'dim:%\''''
         as_dim = dbmain.query_one_simple(sql)
         if as_dim is None:
@@ -86,10 +86,10 @@ def make_sql(what='', where_index='nada', sort_by=''):
             if i:
                 i = str(i)
                 where_ += '''
-                     pu_id in(select * from (select tr_book from tag_ref where tr_tag in(''' + i[
+                     pu_id in(select * from (select tags_ref_book from tags_reference where tags_ref_tag_id in(''' + i[
                                                                                                1:-1] + ''')) as foo) AND '''
             else:
-                where_ += '''pu_id in(select * from (select tr_book from tag_ref where tr_tag in(-1)) as foo) AND '''
+                where_ += '''pu_id in(select * from (select tags_ref_book from tags_reference where tags_ref_tag_id in(-1)) as foo) AND '''
         else:
             t = ''
             for n in tags:
@@ -97,11 +97,11 @@ def make_sql(what='', where_index='nada', sort_by=''):
             t = t[:-1]
             c = str(len(tags))
             where_ = ''' where EXISTS (SELECT NULL
-             FROM tag_ref tg
-             JOIN TAGS t ON t.ta_id = tg.tr_tag
+             FROM tags_reference tg
+             JOIN TAGS t ON t.ta_id = tg.tags_ref_tag_id
             WHERE unaccent(t.ta_name) IN (unaccent(''' + t + '''))
-              AND tg.tr_book = livros.pu_id
-         GROUP BY tg.tr_book
+              AND tg.tags_ref_book = livros.pu_id
+         GROUP BY tg.tags_ref_book
            HAVING COUNT(t.ta_name) =''' + c + ''') and '''
     else:  # não procura em nada
         where_ += ''' livros.pu_status = status.st_id AND
@@ -128,68 +128,6 @@ def make_sql(what='', where_index='nada', sort_by=''):
     sql = select_ + where_ + join_ + order_ + limit_
     gl.CURRENT_SQL = sql
 
-
-def make_sql_author(what='', order_by='nada', pub_type='todos', pub_status='todos'):
-    gl.CURRENT_SQL = ''
-    # select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros "
-    # join_ = '''inner join authors on au_id=pu_author_id
-    #            inner join types on ty_id=pu_type
-    #            inner join status on st_id=pu_status'''
-    # where_ = []
-    # order_ = ''
-    # if not what == '':
-    #     text_to_search = "\'%" + what.lower().strip() + "%\'"
-    #     if len(text_to_search) > 1:
-    #         where_.append('''unaccent(lower(authors.au_name)) LIKE  unaccent(''' + text_to_search + ''')''')
-    # if pub_type == 'todos':
-    #     pass
-    # else:
-    #     where_.append(
-    #         ''' livros.pu_type = (select ty_id from types where lower(ty_name) like \'''' + pub_type.lower() + '''\')''')
-    # if pub_status == 'todos':
-    #     pass
-    # else:
-    #     where_.append(" livros.pu_status = (select st_id from status where lower(st_nome) like \'" + pub_status + '\')')
-    # where_ = create_sql_where(where_)
-    #
-    # order_ = '' #''' ORDER BY ''' + gl.sort_dic[order_by.lower()] + ' asc '
-    # sql = select_ + join_ +  + order_
-    # gl.CURRENT_SQL = sql
-    sql = ''
-    return sql
-
-
-def make_sql_local(what='', order_by='nada', pub_type='todos', pub_status='todos'):
-    gl.CURRENT_SQL = ''
-    # select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros "
-    # join_ = '''inner join authors on au_id=pu_author_id
-    #            inner join types on ty_id=pu_type
-    #            inner join status on st_id=pu_status'''
-    # where_ = []
-    # order_ = ''
-    # if not what == '':
-    #     # self.key_search = self.sort_dic['local']
-    #     # text_to_search = "\'" + what.lower().strip() + "\'"
-    #
-    #
-    #     text_to_search = "\'" + what.lower().strip() + "\'"
-    #     if len(text_to_search) > 1:
-    #         where_.append('''(lower(pu_cota)) LIKE  ''' + text_to_search )
-    # if pub_type == 'todos':
-    #     pass
-    # else:
-    #     where_.append(
-    #         ''' livros.pu_type = (select ty_id from types where lower(ty_name) like \'''' + pub_type.lower() + '''\')''')
-    # if pub_status == 'todos':
-    #     pass
-    # else:
-    #     where_.append(" livros.pu_status = (select st_id from status where lower(st_nome) like \'" + pub_status + '\')')
-    # where_ = create_sql_where(where_)
-    #
-    # order_ = ''' ORDER BY ''' + gl.sort_dic[order_by.lower()] + ' asc '
-    # sql = select_ + join_ + where_ + order_
-    # gl.CURRENT_SQL = sql
-    # return sql
 
 def make_sql(command_dict):
     print(command_dict)
@@ -236,6 +174,23 @@ def make_sql(command_dict):
     sql = select_ + join_ + create_sql_where(where_) + order_
     gl.CURRENT_SQL = sql
     return sql
+
+
+def make_sql_raw(records = 50, update = False):
+    gl.CURRENT_SQL = ''
+    select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros "
+    join_ = ''' inner join authors on au_id=pu_author_id
+                   inner join types on ty_id=pu_type
+                   inner join status on st_id=pu_status'''
+    where_ = ''
+    if update:
+        order_ = ' order by pu_modified DESC limit ' + str(records)
+    else:
+        order_ = ' order by pu_id DESC limit ' + str(records)
+    sql = select_ + join_ + where_ + order_
+    gl.CURRENT_SQL = sql
+    return sql
+    
     
 def create_sql_where(input_list):
     output_sql = ''

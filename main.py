@@ -27,7 +27,7 @@ import qlib
 import tag_browser
 import edit_record
 import stdio
-import input_isbn
+import options_new
 import authors
 import make_report_html
 import report_display
@@ -141,8 +141,8 @@ class MainWindow(QMainWindow):
         bookAddBtn.setToolTip('Adiciona Livro')
         bookAddBtn.clicked.connect(self.record_add_click)
         
-        bookAddIsbnBtn = QPushButton('Pelo ISBN')
-        bookAddIsbnBtn.setToolTip('Adiciona livro pelo ISBN')
+        bookAddIsbnBtn = QPushButton('Wook')
+        bookAddIsbnBtn.setToolTip('Adiciona livro pela WOOK')
         bookAddIsbnBtn.clicked.connect(self.record_add_ISBN_click)
         
         self.addBookBtn = QPushButton()
@@ -211,7 +211,7 @@ class MainWindow(QMainWindow):
         mainLayout.addLayout(qlib.addHLayout(
             [self.mainSearchCbox, self.mainToSearchEdt, mainSearchBtn, mainSearchClearBtn, self.tags_browserBtn, authorsBtn, cotasBtn,
              widthSumBtn, True,'Ordena:', self.sortByCbox, 'Tipos', self.typesCbox, 'Estado', self.statusCbox,
-             True, True,'Resultados', self.recordLimitEdt]))
+             True, 'Registos', self.recordLimitEdt],60))
              
         
         mainLayout.addLayout(qlib.addHLayout(['AUTOR:eça,POR:nenhum,TIPO:todos,ESTADO:todos',True], 400))
@@ -288,20 +288,21 @@ class MainWindow(QMainWindow):
         form = tag_browser.BrowserTags()
         form.exec_()
         if not form.tag_list == []:
-            self.tags_to_searchEdit.setText(form.tag_list)
-            self.mainToSearchEdt.clear()
+            self.mainToSearchEdt.setText(form.tag_list)
+            # self.mainToSearchEdt.clear()
+            self.mainSearchCbox.setCurrentIndex(2)
     
     def double1_click(self):
         # duplica normal
         if self.grid.item(self.grid.currentRow(), 0) is not None:
-            form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', isbn=False, copy=1)
+            form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', draft_data=False, copy=1)
             form.exec_()
             self.refresh_grid()
     
     def clone_click(self):
         # clona
         if self.grid.item(self.grid.currentRow(), 0) is not None:
-            form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', isbn=False, copy=2)
+            form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', draft_data=False, copy=2)
             form.exec_()
             # self.refresh_grid()
        
@@ -309,11 +310,7 @@ class MainWindow(QMainWindow):
         form = authors.BrowserAuthors()
         form.exec_()
         if form.toto != '':
-            # self.aut.setCurrentIndex(0)
-            # self.authorToSearchEdt.setText(form.toto)
-            # self.author_search_click()
             gl.records_in_ds = 0
-        
             gl.LAST_SEARCH_WHERE = 1
             gl.SEARCH_DICT = {'WHERE': 'author', 'WHAT': form.toto}
             gl.SEARCH_DICT.update(self.filter_options())
@@ -397,40 +394,54 @@ class MainWindow(QMainWindow):
         ex_grid.ex_grid_update(self.grid, {0: ['Tabela', 's'], 1: ['Total', 'sr']}, dataset)
     
     def last_records_click(self):
-        self.recordLimitEdt.setText(gl.SHOW_RECORDS)
-        self.mainSearchCbox.setCurrentIndex(0)
-        # self.firstToSearchEdt.setText('')
-        # self.tags_to_searchEdit.setText('')
+        gl.SHOW_RECORDS = self.recordLimitEdt.text()
+        try:
+            dum = int(gl.SHOW_RECORDS)
+        except ValueError:
+            gl.SHOW_RECORDS='80'
+            self.recordLimitEdt.setText(gl.SHOW_RECORDS)
+        data_access.save_param('SHOW_RECORDS', gl.SHOW_RECORDS)
+        self.sortByCbox.setCurrentIndex(0)
         self.typesCbox.setCurrentIndex(0)
-        sql = '''SELECT
-          livros.pu_id,
-          livros.pu_title,
-          authors.au_name,
-          types.ty_name,
-          status.st_nome,
-          livros.pu_cota,
-          livros.pu_volume,
-          pu_ed_year
-        FROM
-          livros, authors, types, status
-        WHERE'''
-        if self.typesCbox.currentIndex() != 0:
-            sql += ' livros.pu_type = (select ty_id from types where ty_name like \'' + str(
-                self.typesCbox.currentText()) + '\') and '
-        
-        if self.statusCbox.currentIndex() != 0:
-            sql += """ livros.pu_status = (select st_id from status where st_nome like \'""" + str(
-                self.statusCbox.currentText()) + """"\') and """
-        
-        sql += """  livros.pu_status = status.st_id AND
-          authors.au_id = livros.pu_author_id AND
-          types.ty_id = livros.pu_type
-        ORDER BY pu_id DESC LIMIT """ + gl.SHOW_RECORDS + ";"
-       
-        gl.FILTER_DATASET = dbmain.query_many(sql)
-       
+        self.last_fiveBtn.setText('Ultimos ' + gl.SHOW_RECORDS)
+        foo = lib_gabo.make_sql_raw(gl.SHOW_RECORDS, False)
+        gl.FILTER_DATASET = dbmain.query_many(foo)
+        gl.records_in_ds = len(gl.FILTER_DATASET)
         self.update_grid()
-        self.recordLimitEdt.setText(gl.SHOW_RECORDS)
+        # self.recordLimitEdt.setText(gl.SHOW_RECORDS)
+        # self.mainSearchCbox.setCurrentIndex(0)
+        # # self.firstToSearchEdt.setText('')
+        # # self.tags_to_searchEdit.setText('')
+        # self.typesCbox.setCurrentIndex(0)
+        # sql = '''SELECT
+        #   livros.pu_id,
+        #   livros.pu_title,
+        #   authors.au_name,
+        #   types.ty_name,
+        #   status.st_nome,
+        #   livros.pu_cota,
+        #   livros.pu_volume,
+        #   pu_ed_year
+        # FROM
+        #   livros, authors, types, status
+        # WHERE'''
+        # if self.typesCbox.currentIndex() != 0:
+        #     sql += ' livros.pu_type = (select ty_id from types where ty_name like \'' + str(
+        #         self.typesCbox.currentText()) + '\') and '
+        #
+        # if self.statusCbox.currentIndex() != 0:
+        #     sql += """ livros.pu_status = (select st_id from status where st_nome like \'""" + str(
+        #         self.statusCbox.currentText()) + """"\') and """
+        #
+        # sql += """  livros.pu_status = status.st_id AND
+        #   authors.au_id = livros.pu_author_id AND
+        #   types.ty_id = livros.pu_type
+        # ORDER BY pu_id DESC LIMIT """ + gl.SHOW_RECORDS + ";"
+        #
+        # gl.FILTER_DATASET = dbmain.query_many(sql)
+        #
+        # self.update_grid()
+        # self.recordLimitEdt.setText(gl.SHOW_RECORDS)
 
     def show_delete_click(self):
         sql = '''SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome, livros.pu_cota, livros.pu_volume
@@ -509,9 +520,9 @@ class MainWindow(QMainWindow):
         #         if i:
         #             i = str(i)
         #             where_ += '''
-        #                  pu_id in(select * from (select tr_book from tag_ref where tr_tag in(''' + i[1:-1] + ''')) as foo) AND '''
+        #                  pu_id in(select * from (select tr_book from tags_referencewhere tr_tag in(''' + i[1:-1] + ''')) as foo) AND '''
         #         else:
-        #             where_ += '''pu_id in(select * from (select tr_book from tag_ref where tr_tag in(-1)) as foo) AND '''
+        #             where_ += '''pu_id in(select * from (select tr_book from tags_referencewhere tr_tag in(-1)) as foo) AND '''
         #     else:
         #         t = ''
         #         for n in tags:
@@ -519,7 +530,7 @@ class MainWindow(QMainWindow):
         #         t = t[:-1]
         #         c = str(len(tags))
         #         where_ = ''' where EXISTS (SELECT NULL
-        #          FROM tag_ref tg
+        #          FROM tags_referencetg
         #          JOIN TAGS t ON t.ta_id = tg.tr_tag
         #         WHERE unaccent(t.ta_name) IN (unaccent(''' + t + '''))
         #           AND tg.tr_book = livros.pu_id
@@ -563,10 +574,11 @@ class MainWindow(QMainWindow):
         self.sortByCbox.setCurrentIndex(0)
         self.typesCbox.setCurrentIndex(0)
         self.last_fiveBtn.setText('Ultimos ' + gl.SHOW_RECORDS)
-        self.filter_click()
+        foo = lib_gabo.make_sql_raw(gl.SHOW_RECORDS, True)
+        gl.FILTER_DATASET = dbmain.query_many(foo)
+        gl.records_in_ds = len(gl.FILTER_DATASET)
+        self.update_grid()
     
-    
-
     
     def filter_click(self):
         foo = self.make_sql()
@@ -643,12 +655,18 @@ class MainWindow(QMainWindow):
                 self.update_grid()
    
     def record_add_ISBN_click(self):
-        form = input_isbn.InputIsbn()
+        import browser
+        form = browser.BrowserInLine("https://www.wook.pt/")
         form.exec_()
+        # if form.wook[0]:
+        #     form = input_isbn.InputIsbn(form.wook)
+        #     form.exec_()
         self.last_records_click()
-    
-    def record_add_click(self, isbn=False):
-        form = edit_record.EditRecord(-1, '', isbn=False)
+        
+    def record_add_click(self):
+        gl.record_current_dict = {}
+        gl.tags_special_level1_data = []
+        form = edit_record.EditRecord(-1, draft_data=False)
         form.exec_()
         self.refresh_grid()
     
@@ -674,7 +692,7 @@ class MainWindow(QMainWindow):
     
     def grid_double_click(self):
         stack_current_row =self.grid.currentRow()
-        form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), '', isbn=False)
+        form = edit_record.EditRecord(int(self.grid.item(self.grid.currentRow(), 0).text()), draft_data=False)
         form.exec_()
         # if not self.firstToSearchEdt.text() == '':
         #     # self.recordLimitEdt.setText('999')

@@ -84,7 +84,7 @@ class StoreMangDialog(QDialog):
         self.close()
     
     def grid_double_click(self):
-        form = edit_record.EditRecord(int(self.storageGrid.item(self.storageGrid.currentRow(), 0).text()), '', isbn=False)
+        form = edit_record.EditRecord(int(self.storageGrid.item(self.storageGrid.currentRow(), 0).text()), '', draft_data=False)
         form.exec_()
     
 

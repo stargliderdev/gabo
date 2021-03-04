@@ -54,7 +54,7 @@ def search_data_in_table(table, field, data_to_search):
         print('nao existe')
 
 
-def get_livro_data(index):
+def get_book_data(index):
     conn = psycopg2.connect(gl.conn_string)
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     sql = '''SELECT livros.pu_id, livros.pu_title, pu_sub_title, authors.au_name,
@@ -67,10 +67,20 @@ def get_livro_data(index):
         livros.pu_author_id=authors.au_id AND 
         livros.pu_status = status.st_id;'''
     dict_cur.execute(sql, (index, ))
-    rec = dict_cur.fetchone()
-    if rec == []: # houve um erro e o registo está limpo.
-        return -1
-    return rec
+    gl.record_current_dict = dict_cur.fetchone()
+    dict_cur.close()
+    conn.close()
+    if not gl.record_current_dict: # houve um erro e o registo está limpo.
+        return False
+    else:
+        # load level 1
+        gl.tags_special_level1_data = dbmain.query_many('''select tag_key,ta_name,tags_special_name
+                                            from tags_reference
+                                            inner join tags on tags_reference.tags_ref_tag_id=tags.ta_id
+                                            inner join tags_special on tags.tag_key=tags_special.tags_special_key
+                                            where tags_ref_book=%s and  tag_key is not null and tags_special.tags_special_level=1
+                                            order by tags_special.tags_special_order''', (index,))
+        return True
 
 def get_modelo_data(index):
     gl.conn_string = "host=" + gl.db_host + " dbname=" + gl.db_database + " user=" + gl.db_user + " password=" + gl.db_password
@@ -165,7 +175,6 @@ def update_tags(pub_id,tag_list):
     tag_max = dbmain.query_one('''Select max(ta_id)+1 as t from tags''', (True,))[0]
     if tag_max == None:
         tag_max = 1
-    # print tag_max
     for n in tag_list:
         toto = n.lower().strip()
         if toto != '':
@@ -176,8 +185,7 @@ def update_tags(pub_id,tag_list):
                 tag_max +=1
             else:
                 tags_id.append((pub_id,a[0]))
-    # print 'tags.id',tags_id
-    sql = ''' INSERT INTO tag_ref (tr_book, tr_tag) VALUES''' + str(tags_id)[1:-1]
+    sql = ''' INSERT INTO tags_reference(tags_ref_book, tags_ref_tag_id) VALUES''' + str(tags_id)[1:-1]
     dbmain.execute_query(sql, (True, ))
 
 
@@ -227,12 +235,16 @@ def get_areas():
     for n in a:
         gl.ds_areas.append(n[0])
     
-def get_special_tags():
-    a = dbmain.query_many('''select tag_s_name, tag_s_key from tags_special order by tag_s_order''')
+def get_special_tags(level=1):
+    a = dbmain.query_many('''SELECT tags_special_name, tags_special_key
+    FROM tags_special
+    WHERE tags_special_level=%s
+    ORDER BY tags_special_order''', (level,))
     gl.tag_special_list = []
     for n in a:
         gl.tag_special_list.append((n[0], n[1]))
-        gl.tag_special_dict[n[1]] = n[0]
+        gl.tag_special_dict[n[1].upper()] = n[0]
+   
 
     
 if __name__ == "__main__":

@@ -152,7 +152,7 @@ def get_bd_data(index):
 
 def update_tags_1(id, tag_list):
     for n in tag_list:
-        a = execute_query('insert into tag_ref (tr_book, tr_tag) values(%s,%s) ', (id, n))
+        a = execute_query('insert into tags_reference(tr_book, tr_tag) values(%s,%s) ', (id, n))
 
 
 def update_tags(id, tag_list):
@@ -171,7 +171,7 @@ def update_tags(id, tag_list):
             else:
                 tags_id.append((id, a[0]))
     # print 'tags.id',tags_id
-    sql = ''' INSERT INTO tag_ref (tr_book, tr_tag) VALUES''' + str(tags_id)[1:-1]
+    sql = ''' INSERT INTO tags_reference(tr_book, tr_tag) VALUES''' + str(tags_id)[1:-1]
     execute_query(sql, (True,))
 
 
@@ -239,12 +239,12 @@ def query_one(sql, data):
 def insert_tags(tags, pu_id):
     tags_list = tags.split(',')
     if tags_list[0] == '':
-        cleantag_rfs = execute_query('delete from tag_ref where tr_book = %s', (pu_id, ))
+        cleantag_rfs = execute_query('delete from tags_reference where tr_book = %s', (pu_id, ))
     else:
-        cleantag_rfs = execute_query('delete from tag_ref where tr_book = %s', (pu_id, ))
+        cleantag_rfs = execute_query('delete from tags_reference where tr_book = %s', (pu_id, ))
         update_tags(tags_list)
         tagID = get_tags_index(tags_list)
-        update_tags(self.id, tagID)
+        update_tags(self.pub_id, tagID)
 
 
 def db_converter():
@@ -356,11 +356,11 @@ def db_converter():
             n = n[:45]
             try:
                 a = query_one('select ta_id from tags where lower(ta_name) = %s', (n.lower(),))
-                execute_query('insert into tag_ref (tr_book, tr_tag) VALUES (%s,%s)', (book_data['pu_id'], a[0]))
+                execute_query('insert into tags_reference(tr_book, tr_tag) VALUES (%s,%s)', (book_data['pu_id'], a[0]))
             except TypeError:
                 execute_query('insert into tags (ta_name) VALUES (%s)', (n.lower(),))
                 a = (query_one('select ta_id from tags where lower(ta_name) = %s', (n.lower(),)))
-                execute_query('insert into tag_ref (tr_book, tr_tag) VALUES (%s,%s)', (book_data['pu_id'], a[0]))
+                execute_query('insert into tags_reference(tr_book, tr_tag) VALUES (%s,%s)', (book_data['pu_id'], a[0]))
     
     
 def get_system_info():
@@ -370,11 +370,18 @@ def get_system_info():
     print("PyQt version:", PYQT_VERSION_STR)
     
 def main():
-    from cryptography.fernet import Fernet
-    key = Fernet.generate_key()
-    cipher_suite = Fernet(key)
-    cipher_text = cipher_suite.encrypt(b'password')
-    print(key)
-    print(cipher_text)
-   
+    gl.conn_string = "host=192.168.0.181 dbname=livros user=root password=masterkey"
+    
+    bc = query_many('''Select * from tags''')
+    for n in bc:
+        # print (n[1])
+        a = n[1].split(':')
+        if len(a)>1:
+            # print(a[0].upper(),a[1])
+            if a[0].upper() in ['DATA','ED','DIM','COL','PAG']:
+                # print(n,'=>',a[1], a[0])
+                # print('update tags set ta_name=%s, tags_key=%s, tag_level=1 where ta_id=%s', (a[1],a[0].upper(),n[0]))
+                h = execute_query('update tags set ta_name=%s, tag_key=%s where ta_id=%s',(a[1],a[0].upper(),n[0]))
+                h = execute_query('update tags_reference set tags_ref_key=%s, tags_ref_level=1 where tags_ref_tag_id=%s',(a[0].upper(),n[0]))
+                
 main()

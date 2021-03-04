@@ -126,7 +126,8 @@ class BrowserTags(QDialog):
 
     def tag_refresh(self):
         self.c_grid = 10
-        sql = '''select ta_id, ta_name from tags order by ta_name'''
+        # sql = '''select ta_id, ta_name from tags order by ta_name'''
+        sql = '''select ta_id,ta_name from tags where tag_key is null order by ta_name'''
         dataset = dbmain.query_many(sql)
         ex_grid.ex_grid_update (self.grid, {0:['ID','i'],1:['Nome', 's']}, dataset, hidden=0)
         self.grid.horizontalHeader().setVisible(False)
@@ -234,115 +235,120 @@ class EditRecordTags(QDialog):
         self.close()
 
 
-class EditSpecialTags(QDialog):
-    def __init__(self, tags_txt, parent=None):
-        super(EditSpecialTags, self).__init__(parent)
-        self.resize(480, 360)
-        self.setWindowTitle('Edita Etiquetas Especiais')
-        self.tags_list = tags_txt.split(',')
-        masterLayout = QVBoxLayout(self)
-        self.tags_string = ''
-        self.flag = False
-        self.toto = ()
-        self.specialTagsGrid = QTableWidget()
-        self.specialTagsGrid.setSelectionBehavior(QTableWidget.SelectRows)
-        self.specialTagsGrid.setSelectionMode(QTableWidget.SingleSelection)
-        self.specialTagsGrid.setEditTriggers(QTableWidget.AllEditTriggers)
-        self.specialTagsGrid.verticalHeader().setDefaultSectionSize(20)
-        self.specialTagsGrid.setAlternatingRowColors(True)
-        self.specialTagsGrid.verticalHeader().setVisible(False)
-        masterLayout.addWidget(self.specialTagsGrid)
-        exit_btn = QPushButton('Sair')
-        exit_btn.clicked.connect(self.exit_click)
-        
-        valid_btn = QPushButton('Valida')
-        valid_btn.clicked.connect(self.valid_click)
-        
-        masterLayout.addLayout(qc.addHLayout([valid_btn, exit_btn]))
-        
-        self.tag_refresh()
-    
-    def valid_click(self):
-        self.tags_output = ''
-        for linha in range(0, self.specialTagsGrid.rowCount()):
-            try:
-                if self.specialTagsGrid.item(linha, 1).text():
-                    self.tags_output += str(self.specialTagsGrid.item(linha, 2).text()) + ':' + str(self.specialTagsGrid.item(linha, 1).text()) + ','
-            except AttributeError:
-                # linha vazia
-                pass
-        self.tags_output = self.tags_output.replace(',,', ',')
-        self.tags_output = self.tags_output.rstrip(',')
-        self.tags_output = self.tags_output.lstrip(',')
-        self.flag = True
-        for n in self.tags_list:
-            if n.find(':')>-1:
-                pass
-            else:
-                self.tags_output += ',' + n
-        self.tags_output = self.tags_output.lstrip(',')
-        self.close()
-    
-    def tag_refresh(self):
-        tags_data = []
-        tags_data_dict = {}
-        for n in self.tags_list:
-            toto = n.lower().strip()
-            t_key = toto.split(':')
-            if len(t_key)>1:
-                # encontrou uma tag especial
-                try:
-                    # print(t_key, gl.tag_special_dict[t_key[0]], '|', t_key[1])
-                    tags_data_dict [t_key[0]] = (gl.tag_special_dict[t_key[0]], t_key[1], t_key[0])
-                except KeyError:
-                    pass
-        for key in gl.tag_special_dict.keys():
-            if key in tags_data_dict:
-                tags_data.append(tags_data_dict[key])
-            else:
-                tags_data.append((gl.tag_special_dict[key], '', key))
-        lin = 0
-        self.specialTagsGrid.setRowCount(len(tags_data))
-        self.specialTagsGrid.setColumnCount(3)
-        for n in tags_data:
-            item = QTableWidgetItem()
-            item.setText(n[0])
-            item.setFlags(QtCore.Qt.ItemIsEnabled)
-            self.specialTagsGrid.setItem(lin, 0, item)
-
-            item = QTableWidgetItem()
-            item.setText(n[1])
-            self.specialTagsGrid.setItem(lin, 1, item)
-
-            item = QTableWidgetItem()
-            item.setText(n[2])
-            self.specialTagsGrid.setItem(lin, 2, item)
-
-            
-            
-            lin +=1
-        # ex_grid.ex_grid_update(self.specialTagsGrid, {0: ['Nome', 's'],1:['Valor', 's'], 2:['ID_key', 's']}, tags_data)
-        self.specialTagsGrid.horizontalHeader().setVisible(False)
-        self.specialTagsGrid.setAlternatingRowColors(True)
-        self.specialTagsGrid.setStyleSheet("alternate-background-color: #e6fa0f;")
-        self.specialTagsGrid.setColumnWidth(0, 150)
-        self.specialTagsGrid.setColumnWidth(1, 250)
-        self.specialTagsGrid.hideColumn(2)
-    
-    def tag_search_changed(self, text):
-        if text.length() > 3:
-            search = '\'%%' + text + '%%\''
-            # print 'search ',text
-            sql = '''select ta_id, ta_name from tags where ta_name like unaccent(''' + search + ''') order by ta_name'''
-            dataset = dbmain.query_many(sql)
-            ex_grid.ex_grid_update(self.grid, {0: ['ID', 'i'], 1: ['Nome', 's']}, dataset, hidden=0)
-            self.grid.horizontalHeader().setVisible(False)
-            self.grid.setColumnWidth(0, 80)
-            self.grid.setColumnWidth(1, 200)
-    
-    def exit_click(self):
-        self.tag_list = ''
-        self.close()
+# class EditSpecialTags(QDialog):
+#     def __init__(self, tags_txt, parent=None):
+#         super(EditSpecialTags, self).__init__(parent)
+#         self.resize(480, 360)
+#         self.setWindowTitle('Edita Etiquetas Especiais')
+#         self.tags_list = tags_txt.split(',')
+#         masterLayout = QVBoxLayout(self)
+#         self.tags_string = ''
+#         self.flag = False
+#         self.toto = ()
+#         self.specialTagsGrid = QTableWidget()
+#         self.specialTagsGrid.setSelectionBehavior(QTableWidget.SelectRows)
+#         self.specialTagsGrid.setSelectionMode(QTableWidget.SingleSelection)
+#         self.specialTagsGrid.setEditTriggers(QTableWidget.AllEditTriggers)
+#         self.specialTagsGrid.verticalHeader().setDefaultSectionSize(20)
+#         self.specialTagsGrid.setAlternatingRowColors(True)
+#         self.specialTagsGrid.verticalHeader().setVisible(False)
+#         masterLayout.addWidget(self.specialTagsGrid)
+#         exit_btn = QPushButton('Sair')
+#         exit_btn.clicked.connect(self.exit_click)
+#
+#         valid_btn = QPushButton('Valida')
+#         valid_btn.clicked.connect(self.valid_click)
+#
+#         masterLayout.addLayout(qc.addHLayout([valid_btn, exit_btn]))
+#
+#         self.tag_refresh()
+#
+#     def valid_click(self):
+#         self.tags_output = ''
+#         for linha in range(0, self.specialTagsGrid.rowCount()):
+#             try:
+#                 if self.specialTagsGrid.item(linha, 1).text():
+#                     self.tags_output += str(self.specialTagsGrid.item(linha, 2).text()) + ':' + str(self.specialTagsGrid.item(linha, 1).text()) + ','
+#             except AttributeError:
+#                 # linha vazia
+#                 pass
+#         self.tags_output = self.tags_output.replace(',,', ',')
+#         self.tags_output = self.tags_output.rstrip(',')
+#         self.tags_output = self.tags_output.lstrip(',')
+#         self.flag = True
+#         for n in self.tags_list:
+#             if n.find(':')>-1:
+#                 pass
+#             else:
+#                 self.tags_output += ',' + n
+#         self.tags_output = self.tags_output.lstrip(',')
+#         self.close()
+#
+#     def tag_refresh(self):
+#         tags_data = []
+#         tags_data_dict = {}
+#         for n in self.tags_list:
+#             toto = n.strip()
+#             t_key = toto.split(':')
+#             if len(t_key)>1:
+#                 # encontrou uma tag especial
+#                 try:
+#                     # print(t_key, gl.tag_special_dict[t_key[0]], '|', t_key[1])
+#                     tags_data_dict[t_key[0]] = (gl.tag_special_dict[t_key[0]], t_key[1], t_key[0])
+#                 except KeyError:
+#                     pass
+#         for key in gl.tag_special_dict.keys():
+#             if key in tags_data_dict:
+#                 tags_data.append(tags_data_dict[key])
+#             else:
+#                 tags_data.append((gl.tag_special_dict[key], '', key))
+#         print('--------Debug---------')
+#         print('tag_refresh')
+#         print(tags_data)
+#         print('------end debug-------')
+#
+#         lin = 0
+#         self.specialTagsGrid.setRowCount(len(tags_data))
+#         self.specialTagsGrid.setColumnCount(3)
+#         for n in tags_data:
+#             item = QTableWidgetItem()
+#             item.setText(n[0])
+#             item.setFlags(QtCore.Qt.ItemIsEnabled)
+#             self.specialTagsGrid.setItem(lin, 0, item)
+#
+#             item = QTableWidgetItem()
+#             item.setText(n[1])
+#             self.specialTagsGrid.setItem(lin, 1, item)
+#
+#             item = QTableWidgetItem()
+#             item.setText(n[2])
+#             self.specialTagsGrid.setItem(lin, 2, item)
+#
+#
+#
+#             lin +=1
+#         # ex_grid.ex_grid_update(self.specialTagsGrid, {0: ['Nome', 's'],1:['Valor', 's'], 2:['ID_key', 's']}, tags_data)
+#         self.specialTagsGrid.horizontalHeader().setVisible(False)
+#         self.specialTagsGrid.setAlternatingRowColors(True)
+#         self.specialTagsGrid.setStyleSheet("alternate-background-color: #e6fa0f;")
+#         self.specialTagsGrid.setColumnWidth(0, 150)
+#         self.specialTagsGrid.setColumnWidth(1, 250)
+#         self.specialTagsGrid.hideColumn(2)
+#
+#     def tag_search_changed(self, text):
+#         if text.length() > 3:
+#             search = '\'%%' + text + '%%\''
+#             # print 'search ',text
+#             sql = '''select ta_id, ta_name from tags where ta_name like unaccent(''' + search + ''') order by ta_name'''
+#             dataset = dbmain.query_many(sql)
+#             ex_grid.ex_grid_update(self.grid, {0: ['ID', 'i'], 1: ['Nome', 's']}, dataset, hidden=0)
+#             self.grid.horizontalHeader().setVisible(False)
+#             self.grid.setColumnWidth(0, 80)
+#             self.grid.setColumnWidth(1, 200)
+#
+#     def exit_click(self):
+#         self.tag_list = ''
+#         self.close()
 
 def main():
     app = QApplication()

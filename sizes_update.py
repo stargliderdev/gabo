@@ -11,7 +11,7 @@ import qlib
 import tag_browser
 import edit_record
 import stdio
-import input_isbn
+import options_new
 import authors
 import make_report_html
 import report_display

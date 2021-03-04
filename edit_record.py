@@ -7,10 +7,12 @@ from PyQt5.QtWidgets import QTabWidget, QLabel, QCheckBox, QVBoxLayout, QLineEdi
 from PyQt5.Qt import Qt
 
 import isbn_lib
+import lib_tags
 import parameters as gl
 import dmPostgreSQL as dbmain
 import data_access as data_access
 import missing_data
+import tags_special
 from qlib import addHLayout,HLine
 import tag_browser
 import stdio
@@ -18,15 +20,20 @@ import locals
 
 
 class EditRecord(QDialog):
-    def __init__(self,id,data,isbn=True,copy=0,parent=None):
+    def __init__(self, pub_id, draft_data=True, copy=0, parent=None):
+        """draft_data: data from wook not saved
+           data: a dictionary from wook """
         super(EditRecord, self).__init__(parent)
         self.setWindowTitle('Edita Livros')
         self.resize(1024, 768)
         self.error_list = []
         gl.userError = ''
+        self.draft_data = draft_data
+        # self.data = data
         self.toto = False
-        self.id = id
-        
+        self.pub_id = pub_id
+        self.up_date_special_tags = False
+        # self.tags_special_level1_data = (False,[])
         mainLayout = QVBoxLayout(self)
         self.buttonsLayout = QHBoxLayout()
         # tabs
@@ -43,32 +50,38 @@ class EditRecord(QDialog):
         mainLayout.addLayout(self.titleLayout)
         mainLayout.addWidget(self.tabuladorTabWidget)
         
-        if self.id == -1:
+        if self.pub_id == -1:
+            # new
             self.item_data = -1
             self.record_add()
-            if isbn:
-                self.add_from_isbn(data)
+            if self.draft_data:
+                self.add_from_webbrowser()
+            
         else:
-            if copy == 0:
-                self.item_data = data_access.get_livro_data(self.id)
+            # old
+            
+            # if copy == 0:
+            if data_access.get_book_data(self.pub_id):
                 self.refresh_datafields()
-            elif copy == 1:
-                self.item_data = data_access.get_livro_data(self.id)
-                self.refresh_datafields()
-                self.duplicar_registo()
-            elif copy == 2:
-                self.item_data = data_access.get_livro_data(self.id)
-                toto = self.item_data
-                self.refresh_datafields()
-                self.duplicar_registo()
-                read_record(self.pu_title, 'pu_title', toto)
-                read_record(self.pu_isbn, 'pu_isbn', toto)
-                read_record(self.pu_cota, 'pu_cota', toto)
+            #     # record on database
+            #     self.refresh_datafields()
+            # elif copy == 1:
+            #     self.item_data = data_access.get_book_data(self.pub_id)
+            #     self.refresh_datafields()
+            #     self.duplicar_registo()
+            # elif copy == 2:
+            #     self.item_data = data_access.get_book_data(self.pub_id)
+            #     toto = self.item_data
+            #     self.refresh_datafields()
+            #     self.duplicar_registo()
+            #     read_record(self.pu_title, 'pu_title', toto)
+            #     read_record(self.pu_isbn, 'pu_isbn', toto)
+            #     read_record(self.pu_cota, 'pu_cota', toto)
         self.pu_title.setFocus()
         
         self.stored = True
-        if self.pu_cota.text() == '':
-            self.pu_cota.setText(gl.ON_LOCAL)
+        # if self.pu_cota.text() == '':
+        #     self.pu_cota.setText(gl.ON_LOCAL)
     
     def make_title(self):
         self.pu_title = QLineEdit()
@@ -189,7 +202,7 @@ class EditRecord(QDialog):
         sizesTBtn = QToolButton()
         sizesTBtn.clicked.connect(self.show_sizes_click)
         specialTagsBtn = QToolButton()
-        specialTagsBtn.setText('Etiquetas Especiais')
+        specialTagsBtn.setText('Caracteristicas')
         specialTagsBtn.clicked.connect(self.edit_special_tags_click)
         sizesTBtn = QToolButton()
         sizesTBtn.clicked.connect(self.show_sizes_click)
@@ -214,9 +227,9 @@ class EditRecord(QDialog):
         self.buttonsLayout.addWidget(self.btnDuplica)
         self.btnDuplica.clicked.connect(self.duplicar_registo)
         
-        self.get_wookBtn = QPushButton('Wook')
-        self.get_wookBtn.clicked.connect(self.get_wook_click)
-        self.buttonsLayout.addWidget(self.get_wookBtn)
+        # self.get_wookBtn = QPushButton('Wook')
+        # self.get_wookBtn.clicked.connect(self.get_wook_click)
+        # self.buttonsLayout.addWidget(self.get_wookBtn)
         
         self.btnSai = QPushButton()
         self.btnSai.setText('Sair')
@@ -224,69 +237,18 @@ class EditRecord(QDialog):
         self.buttonsLayout.addStretch()
         self.btnSai.clicked.connect(self.exit_form)
 
-        # previousBtn = QToolButton()
-        # previousBtn.setIcon(QIcon('./img/previous.png'))
-        # previousBtn.setToolTip('Anterior')
-        # self.buttonsLayout.addWidget(previousBtn)
-        # previousBtn.clicked.connect(self.previous_record_click)
-        
-
-        # saveRecordBnt = QToolButton()
-        # saveRecordBnt.setIcon(QIcon('./img/record.png'))
-        # self.buttonsLayout.addWidget(saveRecordBnt)
-        # saveRecordBnt.setToolTip('Grava')
-        #
-        # nextBtn = QToolButton()
-        # nextBtn.setIcon(QIcon('./img/next.png'))
-        # self.buttonsLayout.addWidget(nextBtn)
-        # nextBtn.setToolTip('Seguinte')
-        
     
-    def get_wook_click(self):
-        xl = isbn_lib.get_isbn_wook(self.pu_isbn.text())
-        dum = self.tags.toPlainText().rstrip(',')
-        tags_txt = dum.split(',')
-        tags_data = []
-        for n in tags_txt:
-            toto = n.lower().strip()
-            if toto != '':
-                a = dbmain.query_one('select ta_id from tags where ta_name = %s', (toto,))
-                tags_data.append((a, toto))
-        tags_data.append((0,''))
-        tags_data.append((0,''))
-        tags_data.append((0, xl['pu_author']))
-        tags_data.append((0, 'data:' + xl['pu_ed_date']))
-        tags_data.append((0, 'ed:' + xl['pu_editor']))
-        tags_data.append((0, xl['pu_lang']))
-        tags_data.append((0, xl['pu_media']))
-        tags_data.append((0, 'pag:' + xl['pu_pages']))
-        tags_data.append((0, 'dim:' + xl['pu_size']))
-        
-        form = tag_browser.EditRecordTags(tags_data)
-        form.exec_()
-        if form.flag:
-            if form.tag_list == '':
-                pass
-            else:
-                self.tags.setText('<font color="blue"><strong>' + form.tag_list)
-    
-    
-    def add_from_isbn(self, data):
-        t = []
-        self.pu_title.setText(data['pu_title'])
-        self.pu_isbn.setText(data['pu_isbn'])
-        t.append('ed:' + data['pu_editor'].lower())
-        t.append('data:' + data['pu_ed_date'])
-        t.append('pag:' + data['pu_pages'])
-        t.append(data['pu_media'].lower())
-        t.append('dim:' + data['pu_size'])
-        if data['tag_author']:
-            t.append(data['pu_author'].lower())
-        self.pu_author_id.setEditText(data['pu_author'])
-        self.pu_sinopse.setText(self.cleanTags(data['pu_sinopse']))
-        if not data['pu_ed_year'] == '0':
-            self.pu_ed_year.setText(data['pu_ed_year'])
-        self.tags.setHtml('<font color="blue"><strong>' + ','.join(t))
+    def add_from_webbrowser(self,):
+        self.pu_title.setText(gl.record_current_dict['pu_title'])
+        self.pu_isbn.setText(gl.record_current_dict['isbn'])
+        self.pu_sub_title.setText(gl.record_current_dict['pu_sub_title'])
+        self.pu_author_id.setEditText(gl.record_current_dict['pu_author'])
+        self.pu_sinopse.setText(self.cleanTags(gl.record_current_dict['pu_sinopse']))
+        if gl.record_current_dict['pu_ed_year'] == '0':
+            self.pu_ed_year.setText('0')
+        else:
+            self.pu_ed_year.setText(gl.record_current_dict['pu_ed_year'])
+        self.tags.setHtml('<font color="blue"><strong>' + gl.record_current_dict['pu_tags'])
     
     
     def exit_form(self):
@@ -294,7 +256,7 @@ class EditRecord(QDialog):
         if not self.stored:
             responde = QMessageBox.warning(None,
                                            "Sair Antes de Gravar",
-                                           """Atenção o registo ainda não foi gravado! Sair sem gravar? """,
+                                           """Atenção o registo ainda não foi gravado! \nSair sem gravar? """,
                                            QMessageBox.StandardButtons(QMessageBox.Cancel | QMessageBox.Yes),
                                            QMessageBox.Cancel)
             if responde == QMessageBox.Yes:
@@ -310,25 +272,25 @@ class EditRecord(QDialog):
         gl.ON_LOCAL = self.pu_cota.text().upper().strip()
         gl.TYPE = self.pu_type.currentIndex()
         gl.STATUS = self.pu_status.currentIndex()
-        if self.item_data == -1:
+        if self.pub_id == -1:
+            # if self.draft_data:
             if self.check_new_record():
-                # print 'insere registo'
                 self.insert_record()
                 self.toto = True
                 self.close()
             else:
-                form = missing_data.DadosWizard('\n'.join(self.error_list), ['Corrigir', 'Continuar mesmo assim'])
+                form = missing_data.DadosWizard('\n'.join(self.error_list), ['Corrigir'])
                 form.exec_()
+                # if form.toto == 0:
+                #     print('Corrige')
+                # elif form.toto == 1:
+                #     print('continua')
+                #     self.fill_defaults()
+                #     self.check_new_record()
+                #     self.insert_record()
+                #     self.toto = True
+                #     self.close()
                 
-                if form.toto == 0:
-                    print('Corrige')
-                elif form.toto == 1:
-                    print('continua')
-                    self.fill_defaults()
-                    self.check_new_record()
-                    self.insert_record()
-                    self.toto = True
-                    self.close()
         else:
             if self.check_update_record():
                 self.update_record()
@@ -516,15 +478,19 @@ class EditRecord(QDialog):
                 self.tags.setHtml('<font color="blue"><strong>' + form.tag_list)
 
     def edit_special_tags_click(self):
-        tags_txt = self.tags.toPlainText().rstrip(',')
-        form = tag_browser.EditSpecialTags(tags_txt)
+        if self.draft_data:
+            form = tags_special.EditSpecialTags(0)
+        else:
+            form = tags_special.EditSpecialTags(self.pub_id)
         form.exec_()
+        # save pub special tags
         if form.flag:
-            if form.tags_output == '':
-                pass
-            else:
-                self.tags.setHtml('<font color="blue"><strong>' + form.tags_output)
-
+            if self.pub_id > 0:
+                lib_tags.update_special_tags(self.pub_id, 1)
+                gl.update_special_tags = False
+        # else:
+        #     self.tags_special_level1_data = (False,[])
+        
     def show_sizes_click(self):
         pass
     
@@ -594,28 +560,28 @@ class EditRecord(QDialog):
         self.pu_type.setCurrentText(gl.TYPE)
     
     def refresh_datafields(self):
+        """record on database"""
         self.update_combo_boxes()
-        read_record(self.pu_title, 'pu_title', self.item_data)
-        read_record(self.pu_sub_title, 'pu_sub_title', self.item_data)
-        read_record(self.pu_author_id, 'au_name', self.item_data)
-        read_record(self.pu_isbn, 'pu_isbn', self.item_data)
-        read_record(self.pu_cota, 'pu_cota', self.item_data)
-        read_record(self.pu_type, 'ty_name', self.item_data)
-        read_record(self.pu_volume, 'pu_volume', self.item_data)
-        self.pu_status.setCurrentIndex(self.item_data['st_id'] - 1)
-        read_record(self.pu_obs, 'pu_obs', self.item_data)
-        read_record(self.pu_sinopse, 'pu_sinopse', self.item_data)
-        read_record(self.pu_ed_year, 'pu_ed_year', self.item_data)
+        self.pu_title.setText(gl.record_current_dict['pu_title'])
+        self.pu_sub_title.setText(gl.record_current_dict['pu_sub_title'])
+        self.pu_author_id.setCurrentText(gl.record_current_dict['au_name'])
+        read_record(self.pu_isbn, 'pu_isbn', gl.record_current_dict)
+        read_record(self.pu_cota, 'pu_cota', gl.record_current_dict)
+        read_record(self.pu_type, 'ty_name', gl.record_current_dict)
+        read_record(self.pu_volume, 'pu_volume', gl.record_current_dict)
+        self.pu_status.setCurrentIndex(gl.record_current_dict['st_id'] - 1)
+        read_record(self.pu_obs, 'pu_obs', gl.record_current_dict)
+        read_record(self.pu_sinopse, 'pu_sinopse', gl.record_current_dict)
+        read_record(self.pu_ed_year, 'pu_ed_year', gl.record_current_dict)
         self.tags_stack = self.get_tags_from_record()
         self.tags.setHtml('<font color="blue"><strong>' + self.tags_stack)
     
     def get_tags_from_record(self):
-        sql = 'SELECT tags.ta_name FROM tag_ref INNER JOIN public.tags ON (public.tag_ref.tr_tag = public.tags.ta_id)\
-        where tag_ref.tr_book = ' + str(self.id)
-        a = dbmain.query_many(sql )
+        sql = 'SELECT tags.ta_name FROM tags_reference INNER JOIN public.tags ON (public.tags_reference.tags_ref_tag_id = public.tags.ta_id)\
+        where tags_reference.tags_ref_book =%s and tags_ref_level =0' # + str(self.pub_id)
+        a = dbmain.query_many(sql, (self.pub_id,))
         tags = ''
         for n in a:
-            ##print type(n[0])
             tags += n[0].lower() + ','
         return tags.rstrip(',')
     
@@ -632,11 +598,11 @@ class EditRecord(QDialog):
         data += (self.pu_status.currentText().lower(),)
         data += (self.pu_title.text().strip(),)
         data += (self.pu_volume.text(),write_record(self.pu_ed_year),self.pu_sub_title.text())
-        a = dbmain.execute_query(sql, data)
+        dbmain.execute_query(sql, data)
         
         ''' campos especiais '''
-        self.id = dbmain.query_one('select max(pu_id) from livros', (True,))[0]
-        gl.last_id = self.id
+        self.pub_id = dbmain.query_one('select max(pu_id) from livros', (True,))[0]
+        gl.last_id = self.pub_id
         ''' actualiza obs'''
         self.update_tags()
         gl.TYPE = self.pu_type.currentText()
@@ -668,12 +634,13 @@ class EditRecord(QDialog):
         data += (self.pu_volume.text().upper(),)
         data += (write_record(self.pu_ed_year), self.pu_sub_title.text())
         
-        data += (self.item_data['pu_id'],)
+        data += (self.pub_id,)
         
         a = dbmain.execute_query(sql, data)
         ''' actualiza obs'''
-        if str(self.tags_stack) != str(self.tags.toPlainText()):
-            self.update_tags()
+        # if str(self.tags_stack) != str(self.tags.toPlainText()):
+        
+        self.update_tags()
         gl.TYPE = self.pu_type.currentText()
         gl.STATUS = self.pu_status.currentText()
     
@@ -686,10 +653,14 @@ class EditRecord(QDialog):
         tags_list = xl.split(',')
         tags_list = stdio.remove_duplicates(tags_list)
         if tags_list[0] == '':
-            cleantag_rfs = dbmain.execute_query('delete from tag_ref where tr_book = %s', (self.id,))
+            dbmain.execute_query('delete from tags_reference where tags_ref_book = %s and tags_ref_level=0', (self.pub_id,))
         else:
-            cleantag_rfs = dbmain.execute_query('delete from tag_ref where tr_book = %s', (self.id,))
-            data_access.update_tags(self.id, tags_list)
+            dbmain.execute_query('delete from tags_reference where tags_ref_book = %s and tags_ref_level=0', (self.pub_id,))
+            data_access.update_tags(self.pub_id, tags_list)
+        # if self.tags_special_level1_data[0]:
+        if self.up_date_special_tags:
+            lib_tags.update_special_tags(self.pub_id, 1)
+    
     
     def cleanTags(self, text):
         # remove the newlines

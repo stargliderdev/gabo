@@ -33,4 +33,17 @@ types_dic = {'todos': ''}
 LAST_SEARCH_WHERE:int = 1
 FILTER_DATASET = []
 SEARCH_DICT = {}
+# main vars
+record_current_dict = {}
+tags_special_level1_data = [] # KEY, value, description
 
+year_as_date = True
+add_author_as_label = True
+check_in_database = True
+capitalize_title = True
+title_in_upper = False
+author_surname = False
+author_surname_title = False
+smart_title = False
+add_isbn = True
+update_special_tags = False
