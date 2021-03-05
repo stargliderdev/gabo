@@ -130,7 +130,6 @@ def make_sql(what='', where_index='nada', sort_by=''):
 
 
 def make_sql(command_dict):
-    print(command_dict)
     gl.CURRENT_SQL = ''
     select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros "
     join_ = ''' inner join authors on au_id=pu_author_id
@@ -153,12 +152,17 @@ def make_sql(command_dict):
         elif command_dict['WHERE'] == 'isbn':
             text_to_search = "\'%" + command_dict['WHAT'].lower().strip() + "%\'"
             where_.append('''pu_isbn LIKE  ''' + text_to_search)
+        elif command_dict['WHERE'] == 'tags':
+            text_to_search = ''
+            for n in command_dict['WHAT'].lower().split(','):
+                text_to_search += '\'' + n + '\'' + ','
+            text_to_search = text_to_search[:-1]
+            where_.append("pu_id in (select tags_ref_book from tags_reference "
+                          "where tags_ref_tag_id in (select ta_id from tags where ta_name in (" + text_to_search + ")))")
     except KeyError:
         pass
     
-    """ generic filter 
-        v1
-    """
+    """ generic filter  v1 """
     try:
         where_.append(" livros.pu_type = (select ty_id from types where lower(ty_name) like \'" + command_dict['TYPE'].lower() + '\')')
     except KeyError:
@@ -173,6 +177,7 @@ def make_sql(command_dict):
         pass
     sql = select_ + join_ + create_sql_where(where_) + order_
     gl.CURRENT_SQL = sql
+    
     return sql
 
 

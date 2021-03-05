@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QDesktopWidget, QLabel, QVBoxLayout, QLineEdit, QCom
     QWidget, QMainWindow, QApplication, QMessageBox, QStyleFactory, QToolButton, QAction
 from PyQt5.QtGui import QIcon
 
+import browser
 import storage
 
 try:
@@ -83,7 +84,7 @@ class MainWindow(QMainWindow):
         self.mainSearchCbox = QComboBox()
         self.mainSearchCbox.setMaximumWidth(90)
         self.mainSearchCbox.setMinimumWidth(90)
-        self.mainSearchCbox.addItems(['Titulo', 'ISBN', 'tag'])
+        self.mainSearchCbox.addItems(['Titulo', 'ISBN', 'Etiqueta'])
         self.mainSearchCbox.setCurrentIndex(0)
         
         self.mainToSearchEdt = QLineEdit()
@@ -143,7 +144,7 @@ class MainWindow(QMainWindow):
         
         bookAddIsbnBtn = QPushButton('Wook')
         bookAddIsbnBtn.setToolTip('Adiciona livro pela WOOK')
-        bookAddIsbnBtn.clicked.connect(self.record_add_ISBN_click)
+        bookAddIsbnBtn.clicked.connect(self.record_add_wook_click)
         
         self.addBookBtn = QPushButton()
         self.addBookBtn.setToolTip('Adicionar Livro')
@@ -199,7 +200,7 @@ class MainWindow(QMainWindow):
         self.statusCbox.addItems(self.status)
         self.statusCbox.currentIndexChanged.connect(self.status_change)
         widthSumBtn = QToolButton()
-        widthSumBtn.setToolTip('Sair')
+        widthSumBtn.setToolTip('Espaço')
         widthSumBtn.setIcon(QIcon('./img/width_sigma.png'))
         # self.set_icon_size(widthSumBtn)
         widthSumBtn.clicked.connect(self.width_sum_click)
@@ -482,7 +483,8 @@ class MainWindow(QMainWindow):
         # v2.5
         
         # gl.CURRENT_SQL = ''
-        # select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year FROM livros, authors, types, status"
+        # select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year
+        # FROM livros, authors, types, status"
         # join_ = " livros.pu_status = status.st_id AND authors.au_id = livros.pu_author_id AND types.ty_id = livros.pu_type "
         # where_ = ' WHERE '
         # order_ = ''
@@ -520,9 +522,9 @@ class MainWindow(QMainWindow):
         #         if i:
         #             i = str(i)
         #             where_ += '''
-        #                  pu_id in(select * from (select tr_book from tags_referencewhere tr_tag in(''' + i[1:-1] + ''')) as foo) AND '''
+        #                  pu_id in(select * from (select tr_book from tags_reference where tr_tag in(''' + i[1:-1] + ''')) as foo) AND '''
         #         else:
-        #             where_ += '''pu_id in(select * from (select tr_book from tags_referencewhere tr_tag in(-1)) as foo) AND '''
+        #             where_ += '''pu_id in(select * from (select tr_book from tags_reference where tr_tag in(-1)) as foo) AND '''
         #     else:
         #         t = ''
         #         for n in tags:
@@ -587,12 +589,15 @@ class MainWindow(QMainWindow):
         self.update_grid()
         
     def main_search_click(self):
+        """will search in title, tags and ISBN"""
         if not self.mainToSearchEdt.text() == '':
             print(self.mainSearchCbox.currentText())
-            if self.mainSearchCbox.currentIndex() == 0:
+            if self.mainSearchCbox.currentIndex() == 0: # title
                 gl.SEARCH_DICT = {'WHERE': 'title', 'WHAT': self.mainToSearchEdt.text()}
-            elif self.mainSearchCbox.currentIndex() == 1:
+            elif self.mainSearchCbox.currentIndex() == 1: # ISBN
                 gl.SEARCH_DICT = {'WHERE': 'isbn', 'WHAT': self.mainToSearchEdt.text()}
+            elif self.mainSearchCbox.currentIndex() == 2: # tags
+                gl.SEARCH_DICT = {'WHERE': 'tags', 'WHAT': self.mainToSearchEdt.text()}
             gl.SEARCH_DICT.update(self.filter_options())
             sql = lib_gabo.make_sql(gl.SEARCH_DICT)           
             gl.FILTER_DATASET = dbmain.query_many(sql)
@@ -654,13 +659,10 @@ class MainWindow(QMainWindow):
             else:
                 self.update_grid()
    
-    def record_add_ISBN_click(self):
-        import browser
+    def record_add_wook_click(self):
         form = browser.BrowserInLine("https://www.wook.pt/")
         form.exec_()
-        # if form.wook[0]:
-        #     form = input_isbn.InputIsbn(form.wook)
-        #     form.exec_()
+        
         self.last_records_click()
         
     def record_add_click(self):
@@ -671,12 +673,7 @@ class MainWindow(QMainWindow):
         self.refresh_grid()
     
     def get_data(self):
-        sql = '''SELECT
-          livros.pu_id,
-          livros.pu_title,
-          authors.au_name,
-          types.ty_name,
-          status.st_nome,
+        sql = '''SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,
           livros.pu_cota,livros.pu_volume, pu_ed_year
         FROM
           livros, authors, types, status

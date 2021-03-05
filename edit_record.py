@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QTabWidget, QLabel, QCheckBox, QVBoxLayout, QLineEdi
 
 from PyQt5.Qt import Qt
 
+import browser
 import isbn_lib
 import lib_tags
 import parameters as gl
@@ -227,14 +228,14 @@ class EditRecord(QDialog):
         self.buttonsLayout.addWidget(self.btnDuplica)
         self.btnDuplica.clicked.connect(self.duplicar_registo)
         
-        # self.get_wookBtn = QPushButton('Wook')
-        # self.get_wookBtn.clicked.connect(self.get_wook_click)
-        # self.buttonsLayout.addWidget(self.get_wookBtn)
+        self.openWookBtn = QPushButton('Wook')
+        self.openWookBtn.clicked.connect(self.open_wook_click)
+        self.buttonsLayout.addWidget(self.openWookBtn)
         
         self.btnSai = QPushButton()
         self.btnSai.setText('Sair')
-        self.buttonsLayout.addWidget(self.btnSai)
         self.buttonsLayout.addStretch()
+        self.buttonsLayout.addWidget(self.btnSai)
         self.btnSai.clicked.connect(self.exit_form)
 
     
@@ -250,6 +251,9 @@ class EditRecord(QDialog):
             self.pu_ed_year.setText(gl.record_current_dict['pu_ed_year'])
         self.tags.setHtml('<font color="blue"><strong>' + gl.record_current_dict['pu_tags'])
     
+    def open_wook_click(self):
+        form = browser.BrowserInLine("https://www.wook.pt/")
+        form.exec_()
     
     def exit_form(self):
         self.toto = False
