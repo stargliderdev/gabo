@@ -1,9 +1,9 @@
 # gabo
+Gestão de bibliotecas e outras colecções
 Pesquisa por:
 <ul>
 <li>ISBN </li>
 <li>Etiquetas/Tags</li>
-<li>Gestão de bibliotecas e outras colecções</li>
 <li>Categorias (Livro, Revista, Banda Desenhada) configuraveis</li>
 <li>Numero de volume.</li>
 <li>Data de edição.</li>
