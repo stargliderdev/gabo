@@ -13,7 +13,7 @@ def update_special_tags(pub_id,level=1):
     tag_max = dbmain.query_one('''SELECT MAX(ta_id)+1 AS t FROM tags''', (True,))[0]
     if tag_max is None:
         tag_max = 1
-    for n in gl.tags_special_level1_data:
+    for n in gl.TAGS_SPECIAL_LEVEL1_DATA:
         a = dbmain.query_one('SELECT ta_id FROM tags where lower(ta_name) = %s and tag_key = %s', (n[1].lower(),n[0]))
         if a == None: # é nova
             dbmain.execute_query('INSERT INTO tags (ta_name, tag_key) values(%s,%s)', (n[1],n[0]))

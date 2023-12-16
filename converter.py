@@ -23,10 +23,10 @@ def addRecord2Table(table, field, value, type_field):
 def get_types():
     a = query_many('select ty_id,ty_name from types  ')
     gl.types_dict = {}  # {u'Ficção':1, 'Romance':2, 'Ensaio':3, 'Técnico':4}
-    gl.ds_types = []  # [u'Ficção', u'Romance', u'Ensaio', u'Técnico'])
+    gl.types_list = []  # [u'Ficção', u'Romance', u'Ensaio', u'Técnico'])
     for n in a:
         gl.types_dict[n[1]] = n[0]
-        gl.ds_types.append(n[1])
+        gl.types_list.append(n[1])
 
 
 def get_autores():
@@ -39,7 +39,7 @@ def get_autores():
 
 
 def get_status():
-    a = query_many('select st_id,st_nome from status')
+    a = query_many('select status_id,status_nome from status')
     gl.dsStatus = []
     gl.status_dict = {}
     for n in a:
@@ -65,12 +65,12 @@ def get_livro_data(index):
     sql = '''SELECT livros.pu_id, livros.pu_title, authors.au_name,
         livros.pu_cota,types.ty_name,
         livros.pu_obs,  
-        livros.pu_isbn,status.st_nome, pu_sinopse, pu_volume,pu_ed_year,types.ty_id,status.st_id
+        livros.pu_isbn,status.st_nome, pu_sinopse, pu_volume,pu_ed_year,types.ty_id,status.status_id
         FROM livros, authors,types, status
         WHERE livros.pu_id = %s and  
         types.ty_id = livros.pu_type  and
         livros.pu_author_id=authors.au_id AND 
-        livros.pu_status = status.st_id;'''
+        livros.pu_status = status.status_id;'''
     dict_cur.execute(sql, (index,))
     rec = dict_cur.fetchone()
     if rec == []:  # houve um erro e o registo está limpo.
@@ -140,7 +140,7 @@ def get_bd_data(index):
         types.ty_id = livros.pu_type AND assuntos.as_id = livros.pu_subject AND
         livros.pu_media_format=media_formats.mf_id AND livros.pu_serie = series.se_id AND 
         livros.pu_author_id=authors.au_id AND publishers.pb_id = livros.pu_editor_id AND 
-        livros.pu_status = status.st_id AND livros.pu_language=languages.lg_id AND
+        livros.pu_status = status.status_id AND livros.pu_language=languages.lg_id AND
         livros.pu_bd_hero = hero.he_id;'''
     dict_cur.execute(sql, (index,))
     
@@ -178,8 +178,8 @@ def update_tags(id, tag_list):
 def get_record(uuid):
     conn = psycopg2.connect(gl.conn_string)
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    sql = '''select * from livros,assuntos
-           where livros.pu_subject=assuntos.as_id and pu_id = %s'''
+    sql = '''select * from livros
+           where pu_id = %s'''
     dict_cur.execute(sql, (uuid,))
     rec = dict_cur.fetchone()
     conn.close()
@@ -248,7 +248,7 @@ def insert_tags(tags, pu_id):
 
 
 def db_converter():
-    gl.conn_string = "host=192.168.0.171 dbname=livros user=root password=masterkey"
+    gl.conn_string = "host=localhost dbname=livros user=root password=masterkey"
     
     bc = query_many('''Select pu_id
                     from livros
@@ -277,9 +277,9 @@ def db_converter():
         #         print('já existem')
         #         execute_query('update livros set pu_author_id = (select au_id from authors where au_name=%s) '
         #                       'where pu_id =%s', (c, xl ))
-        if book_data['pu_subject'] > 1:
-            b = query_one('select as_nome  from assuntos where as_id=%s', (book_data['pu_subject'],))
-            tags += b[0].lower() + ','
+        # if book_data['pu_subject'] > 1:
+        #     b = query_one('select as_nome  from assuntos where as_id=%s', (book_data['pu_subject'],))
+        #     tags += b[0].lower() + ','
       
         
         if book_data['pu_translator'] is not None:
@@ -287,8 +287,8 @@ def db_converter():
             z = z.replace('/ ',',')
             for c in z.split(','):
                  tags += 'trad:' + c.strip() + ','
-        if book_data['pu_ed_local'] is not None:
-            tags += 'local:' + book_data['pu_ed_local'].lower() + ','
+        # if book_data['pu_ed_local'] is not None:
+        #     tags += 'local:' + book_data['pu_ed_local'].lower() + ','
         z = book_data['pu_ed_date']
         ed = 0
         try:
@@ -370,7 +370,7 @@ def get_system_info():
     print("PyQt version:", PYQT_VERSION_STR)
     
 def main():
-    gl.conn_string = "host=192.168.0.181 dbname=livros user=root password=masterkey"
+    gl.conn_string = "host=localhost dbname=livros user=root password=masterkey"
     
     bc = query_many('''Select * from tags''')
     for n in bc:
@@ -378,10 +378,11 @@ def main():
         a = n[1].split(':')
         if len(a)>1:
             # print(a[0].upper(),a[1])
-            if a[0].upper() in ['DATA','ED','DIM','COL','PAG']:
+            if a[0].upper() in ['DATA','ED','DIM','COL','PAG', 'TRAD']:
                 # print(n,'=>',a[1], a[0])
                 # print('update tags set ta_name=%s, tags_key=%s, tag_level=1 where ta_id=%s', (a[1],a[0].upper(),n[0]))
                 h = execute_query('update tags set ta_name=%s, tag_key=%s where ta_id=%s',(a[1],a[0].upper(),n[0]))
                 h = execute_query('update tags_reference set tags_ref_key=%s, tags_ref_level=1 where tags_ref_tag_id=%s',(a[0].upper(),n[0]))
                 
+
 main()

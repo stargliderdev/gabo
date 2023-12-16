@@ -144,5 +144,6 @@ def main():
 
 
 if __name__ == '__main__':
-    xl = isbn_lib.get_isbn_wook('9789722365741')
+    pass
+    # xl = isbn_lib.get_isbn_wook('9789722365741')
     

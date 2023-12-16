@@ -57,16 +57,19 @@ class BrowserAuthors(QDialog):
 
     def edit_click(self):
         self.toto = ''
-        au_id = int(self.authorGrid.item(self.authorGrid.currentRow(), 0).text())
-        text, flag = QInputDialog.getText(None, "Edita nome do Autor:","",
-                                          QLineEdit.Normal, self.authorGrid.item(self.authorGrid.currentRow(), 1).text())
-
-        if flag:
-            dbmain.execute_query('update authors set au_name=%s where au_id=%s ', (text, au_id))
-            self.grid_search_changed(self.searchEdit.text())
-            data_access.get_autores()
+        if self.authorGrid.item(self.authorGrid.currentRow(),0) is None:
+            pass
         else:
-            print('faz nada')
+            au_id = int(self.authorGrid.item(self.authorGrid.currentRow(), 0).text())
+            text, flag = QInputDialog.getText(None, "Edita nome do Autor:","",
+                                              QLineEdit.Normal, self.authorGrid.item(self.authorGrid.currentRow(), 1).text())
+    
+            if flag:
+                dbmain.execute_query('update authors set au_name=%s where au_id=%s ', (text, au_id))
+                self.grid_search_changed(self.searchEdit.text())
+                data_access.get_autores()
+            else:
+                print('faz nada')
 
     def grid_refresh(self):
         self.c_grid = 10

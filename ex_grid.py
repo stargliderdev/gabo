@@ -6,7 +6,7 @@ from PyQt5.Qt import Qt
 import qlib
 
 
-def ex_grid_update(grid_ctrl, col, data=[], refresh=False, hidden=-1):
+def ex_grid_update(grid_ctrl, col, data=[], refresh=False, hidden=-1, grid_column_sizes= []):
     def format_as_integer(d):
         item = QTableWidgetItem()
         item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -39,10 +39,10 @@ def ex_grid_update(grid_ctrl, col, data=[], refresh=False, hidden=-1):
     headers = []
     col_type = []
     for k, v in col.items():
-        # print v
         headers.append(v[0])
         col_type.append(v[1])
     colCount = len(headers)
+
     
     if not refresh:
         grid_ctrl.clear()
@@ -58,7 +58,6 @@ def ex_grid_update(grid_ctrl, col, data=[], refresh=False, hidden=-1):
                 pass
             else:
                 if col_type[f] == 'i':
-                    # print 'int'
                     grid_ctrl.setItem(lin, f, format_as_integer(n[f]))
                 elif col_type[f] == 'd':  # date
                     grid_ctrl.setItem(lin, f, format_as_date(n[f]))
@@ -68,11 +67,14 @@ def ex_grid_update(grid_ctrl, col, data=[], refresh=False, hidden=-1):
                     grid_ctrl.setItem(lin, f, format_as_string_center(n[f]))
                 elif col_type[f] == 'sr':
                     grid_ctrl.setItem(lin, f, format_as_string_right(n[f]))
+            
         lin += 1
     if hidden > -1:
         grid_ctrl.hideColumn(hidden)
     if not refresh:
         grid_ctrl.resizeColumnsToContents()
+    for g in grid_column_sizes:
+        grid_ctrl.setColumnWidth(g[0], g[1])
 
 
 def ex_grid__ctrl_update(grid_ctrl, col_dict, data=[], options=[]):
@@ -121,7 +123,6 @@ def ex_grid__ctrl_update(grid_ctrl, col_dict, data=[], options=[]):
     for n in data:
         for f in range(0, number_of_columns):
             if col_type[f] == 'i':
-                # print 'int'
                 grid_ctrl.setItem(lin, f, format_as_integer(n[field_index[f]]))
             elif col_type[f] == 'd':  # date
                 grid_ctrl.setItem(lin, f, format_as_date(n[field_index[f]]))

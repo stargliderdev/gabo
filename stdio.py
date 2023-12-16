@@ -15,10 +15,10 @@ def read_config_file(file_name):
         finally:
             f.close()
         conf_ini = ini_file_to_dic(lines)
-        return True, conf_ini
+        return conf_ini
     except IOError:
         print ('erro ao ler ini')
-        return False, {}
+        return {}
 
 def ini_file_to_dic(lines):
     dic = {}
@@ -196,8 +196,8 @@ def remove_duplicates(values):
 
 def search_internet(txt):
     url = "https://www.google.com.tr/search?q={}".format(txt)
-    b = webbrowser.get('google-chrome')
-    b.open(url)
-
+    # b = webbrowser.get('google-chrome')
+    # b.open(url)
+    webbrowser.open(url)
 if __name__ == '__main__':
     pass

@@ -23,8 +23,8 @@ def simple_table():
     FROM livros, authors, status, types
      where authors.au_id=livros.pu_author_id and
       types.ty_id= livros.pu_type and
-      status.st_id= livros.pu_status
-    AND  livros.pu_status = status.st_id AND authors.au_id = livros.pu_author_id
+      status.status_id= livros.pu_status
+    AND  livros.pu_status = status.status_id AND authors.au_id = livros.pu_author_id
     AND types.ty_id = livros.pu_type
     and  types.ty_id not in(7,8,9,10,11)
            ORDER BY livros.pu_title asc LIMIT 99999 ''')
