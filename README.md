@@ -1,10 +1,12 @@
 # gabo
 Gestão de bibliotecas e outras colecções<br>
 Pesquisa por:
-ISBN <br>
-Etiquetas/Tags<br>
+<ul>
+  <li>ISBN </li>  
+<li>Etiquetas/Tags</li>
+</ul>
 Categorias (Livro, Revista, Banda Desenhada) configuraveis<br>
-<p style="margin-left: 40px">Numero de volume.</p> <br>
+Numero de volume. <br>
 Data de edição.<br>
 Filtro por autores<br>
 Cotas/Locais<br>
