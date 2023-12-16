@@ -1333,7 +1333,7 @@ class PrettyTable:
         if fieldname not in self._field_names:
             raise Exception(
                 "Can't delete column %r which is not a field name of this table."
-                " Field names are: %s"
+                " Field names are: ?"
                 % (fieldname, ", ".join(map(repr, self._field_names)))
             )
 
@@ -1370,9 +1370,9 @@ class PrettyTable:
 
     def _format_value(self, field, value):
         if isinstance(value, int) and field in self._int_format:
-            value = ("%%%sd" % self._int_format[field]) % value
+            value = ("%%?d" % self._int_format[field]) % value
         elif isinstance(value, float) and field in self._float_format:
-            value = ("%%%sf" % self._float_format[field]) % value
+            value = ("%%?f" % self._float_format[field]) % value
         return str(value)
 
     def _compute_table_width(self, options):
@@ -1924,7 +1924,7 @@ class PrettyTable:
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    "            <th>%s</th>" % escape(field).replace("\n", linebreak)
+                    "            <th>?</th>" % escape(field).replace("\n", linebreak)
                 )
             lines.append("        </tr>")
             lines.append("    </thead>")
@@ -1939,7 +1939,7 @@ class PrettyTable:
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    "            <td>%s</td>" % escape(datum).replace("\n", linebreak)
+                    "            <td>?</td>" % escape(datum).replace("\n", linebreak)
                 )
             lines.append("        </tr>")
         lines.append("    </tbody>")
@@ -1998,7 +1998,7 @@ class PrettyTable:
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    '            <th style="padding-left: %dem; padding-right: %dem; text-align: center">%s</th>'  # noqa: E501
+                    '            <th style="padding-left: %dem; padding-right: %dem; text-align: center">?</th>'  # noqa: E501
                     % (lpad, rpad, escape(field).replace("\n", linebreak))
                 )
             lines.append("        </tr>")
@@ -2025,7 +2025,7 @@ class PrettyTable:
                 if options["fields"] and field not in options["fields"]:
                     continue
                 lines.append(
-                    '            <td style="padding-left: %dem; padding-right: %dem; text-align: %s; vertical-align: %s">%s</td>'  # noqa: E501
+                    '            <td style="padding-left: %dem; padding-right: %dem; text-align: ?; vertical-align: ?">?</td>'  # noqa: E501
                     % (
                         lpad,
                         rpad,

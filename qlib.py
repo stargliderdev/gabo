@@ -24,6 +24,7 @@ def checkBoxGrid(label=''):
     l.addStretch()
     return w
 
+
 def addHLayout(listobj1,label_size=80, label_align=Qt.AlignVCenter|Qt.AlignRight):
     dumLayout = QHBoxLayout()
     for n in listobj1:
@@ -35,9 +36,12 @@ def addHLayout(listobj1,label_size=80, label_align=Qt.AlignVCenter|Qt.AlignRight
             dumLayout.addWidget(toto)
         elif type(n) == bool:
             dumLayout.addStretch()
+        elif type(n) == int:
+            dumLayout.addSpacing(n)
         else:
             dumLayout.addWidget(n)
     return dumLayout
+
 
 def addVLayout(listobj1):
     dumLayout = QVBoxLayout()

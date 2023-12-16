@@ -10,7 +10,6 @@ import locals
 import edit_record
 import lib_gabo
 import qlib as qc
-import dmPostgreSQL as libpg
 
 
 class StoreMangDialog(QDialog):
@@ -33,17 +32,17 @@ class StoreMangDialog(QDialog):
         self.storageGrid.doubleClicked.connect(self.grid_double_click)
         
         masterLayout = QVBoxLayout(self)
-        cotasBtn = QToolButton()
-        cotasBtn.setToolTip('Cotas Locais')
-        cotasBtn.setIcon(QIcon('./img/locals.png'))
-        cotasBtn.clicked.connect(self.locals_click)
+        localsBtn = QToolButton()
+        localsBtn.setToolTip('locals Locais')
+        localsBtn.setIcon(QIcon('./img/locals.png'))
+        localsBtn.clicked.connect(self.locals_click)
         
         self.toLocalEdt = QLineEdit()
         addNewLocalBtn = QPushButton('Atribui')
         addNewLocalBtn.clicked.connect(self.set_new_local_click)
         storeTempBtn = QPushButton('Grava Previsão')
         storeTempBtn.clicked.connect(self.record_in_temp)
-        masterLayout.addLayout(qc.addHLayout(['Para', self.toLocalEdt, addNewLocalBtn, cotasBtn, storeTempBtn, True]))
+        masterLayout.addLayout(qc.addHLayout(['Para', self.toLocalEdt, addNewLocalBtn, localsBtn, storeTempBtn, True]))
         self.widthEdt = QLineEdit()
         self.lenghtEdt = QLineEdit()
         self.depthEdt = QLineEdit()
@@ -145,7 +144,7 @@ class StoreMangDialog(QDialog):
             new = self.storageGrid.item(idx.row(), 8).text()
             t += (int(self.storageGrid.item(idx.row(), 0).text()),)
             print(idx.row(), '@', new)
-        sql = 'update livros set pu_cota_new = %s where pu_id in ' + str(t)
+        sql = 'update livros set pu_local_new = ? where pu_id in ' + str(t)
         libpg.execute_query(sql, (new,))
     
     def locals_click(self):

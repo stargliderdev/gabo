@@ -3,20 +3,9 @@
 import sys
 
 import parameters as gl
-import dmPostgreSQL as dbmain
 
-import data_access as data_access
-import info as info
-import qlib
-import tag_browser
-import edit_record
+import sqlite_crud as sqlite_crud
 import stdio
-import options_new
-import authors
-import make_report_html
-import report_display
-
-
 
 
 def set_sizes():
@@ -25,7 +14,7 @@ def set_sizes():
     gl.conn_string = "host=" + gl.db_params['db_host'] + ' port=' + gl.db_params['db_port'] + ' dbname=' + gl.db_params[
         'db_database'] + \
                      ' user=' + gl.db_params['db_user'] + ' password=' + gl.db_params['db_password']
-    dbmain.execute_query('delete from sizes', (True,))
+    sqlite_crud.execute_query('delete from sizes', (True,))
     t = dbmain.query_many('select ta_name from tags order by ta_name')
     for n in t:
         a = n[0].split('x')
@@ -33,7 +22,7 @@ def set_sizes():
             try:
                 dum = int(a[0]) + int(a[1]) + int(a[2])
                 print(n[0])
-                dbmain.execute_query('insert into sizes (size_name) VALUES (%s)', (n[0],))
+                sqlite_crud.execute_query('insert into sizes (size_name) VALUES (?)', (n[0],))
             except ValueError:
                 pass
 
@@ -43,6 +32,6 @@ def get_areas():
     gl.conn_string = "host=" + gl.db_params['db_host'] + ' port=' + gl.db_params['db_port'] + ' dbname=' + gl.db_params[
         'db_database'] + \
                      ' user=' + gl.db_params['db_user'] + ' password=' + gl.db_params['db_password']
-    areas = dbmain.query_many('select distinct pu_cota from livros order by pu_cota')
+    areas = dbmain.query_many('select distinct pu_local from books order by pu_local')
     
 main()

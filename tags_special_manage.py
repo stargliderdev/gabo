@@ -5,9 +5,8 @@ import sys
 
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QPushButton, QApplication, QDialog, QInputDialog, \
      QMessageBox, QTreeWidget, QTreeWidgetItem
-import dmPostgreSQL as dbmain
 import qlib as qc
-import data_access
+import sqlite_crud
 import parameters as gl
 import stdio
 
@@ -42,7 +41,7 @@ class TagsSpecialBrowser(QDialog):
         self.update_combo()
         
     def update_combo(self):
-        data_access.get_special_tags()
+        sqlite_crud.get_special_tags()
         self.tagsSpecialList.clear()
         self.tagsSpecialList.setHeaderLabels(["Nome", "Ordem", "Chave"])
         items = []
@@ -61,8 +60,8 @@ class TagsSpecialBrowser(QDialog):
                 m = hashlib.md5()
                 m.update(text.encode('utf-8'))
                 tags_key = str(m.hexdigest())[:8]
-                sql = 'INSERT into tags_special (tags_special_name, tags_special_key) VALUES (%s, %s);'
-                dbmain.execute_query(sql, (text,tags_key))
+                sql = 'INSERT into tags_special (tags_special_name, tags_special_key) VALUES (?, ?);'
+                sqlite_crud.execute_query(sql, (text,tags_key))
                 self.update_combo()
                 self.textEdit.clear()
             else:
@@ -79,8 +78,8 @@ class TagsSpecialBrowser(QDialog):
                                            QMessageBox.StandardButtons(QMessageBox.Cancel | QMessageBox.Yes),
                                            QMessageBox.Cancel)
             if ask == QMessageBox.Yes:
-                dbmain.execute_query('delete from tags_reference where tags_ref_key=%s', (self.tagsSpecialList.currentItem().text(2),))
-                dbmain.execute_query('delete from tags_special where tags_special_key=%s', (self.tagsSpecialList.currentItem().text(2),))
+                sqlite_crud.execute_query('delete from tags_reference where tags_ref_key=?', (self.tagsSpecialList.currentItem().text(2),))
+                sqlite_crud.execute_query('delete from tags_special where tags_special_key=?', (self.tagsSpecialList.currentItem().text(2),))
                 self.update_combo()
             else:
                 pass
@@ -89,14 +88,14 @@ class TagsSpecialBrowser(QDialog):
     def rename_click(self):
         text, flag = QInputDialog.getText(None, "Altera nome da Etiqueta:", "", QLineEdit.Normal,'')
         if flag and not text == '':
-            dbmain.execute_query('UPDATE tags_special set tags_special_name=%s WHERE tags_special_name=%s',
+            sqlite_crud.execute_query('UPDATE tags_special set tags_special_name=? WHERE tags_special_name=?',
                                  (text,self.tagsSpecialList.currentItem().text(0)))
             self.update_combo()
 
     def order_click(self):
         text, flag = QInputDialog.getText(None, "Altera ordem da Etiqueta:", "", QLineEdit.Normal,'')
         if flag and not text == '':
-            dbmain.execute_query('UPDATE tags_special set tags_special_order=%s where tags_special_name=%s',
+            sqlite_crud.execute_query('UPDATE tags_special set tags_special_order=? where tags_special_name=?',
                                  (int(text),self.tagsSpecialList.currentItem().text(0)))
             self.update_combo()
 
@@ -110,7 +109,7 @@ def main():
     gl.conn_string = "host=" + gl.db_params['db_host'] + ' port=' + gl.db_params['db_port'] + ' dbname=' + gl.db_params[
         'db_database'] + \
                      ' user=' + gl.db_params['db_user'] + ' password=' + gl.db_params['db_password']
-    # data_access.get_status()
+    # sqlite_crud.get_status()
     app = QApplication(sys.argv)
     form = TagsSpecialBrowser()
     form.show()

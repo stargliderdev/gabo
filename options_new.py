@@ -96,9 +96,9 @@ class OptionsDialog(QDialog):
     #         if self.capitalizeTitleCbox.checkState():
     #             xl['pu_title'] = xl['pu_title'].title()
     #         if self.yearAsDateCbox.checkState():
-    #             xl['pu_ed_year'] = xl['pu_ed_date'].split('-')[1]
+    #             xl['pu_year'] = xl['pu_ed_date'].split('-')[1]
     #         else:
-    #             xl['pu_ed_year'] = '0'
+    #             xl['pu_year'] = '0'
     #         if self.titleInUpperCbox.checkState():
     #             xl['pu_title'] = xl['pu_title'].upper()
     #         if self.authorSurnameCbox.checkState():
@@ -144,6 +144,6 @@ def main():
 
 
 if __name__ == '__main__':
-    pass
+    main()
     # xl = isbn_lib.get_isbn_wook('9789722365741')
     

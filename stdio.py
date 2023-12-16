@@ -54,7 +54,7 @@ def read_file(file_name, mode=1):
     return toto
 
 def log_write(file_name, content):
-    d = datetime.datetime.now().strftime("%Y.%b.%d %H:%M:%S")
+    d = datetime.datetime.now().strftime("%Y.%b.%d %H:%M:?")
     with open(file_name, "a") as myfile:
         myfile.write(d + ': ' + content + '\n')
 
@@ -167,7 +167,7 @@ def authors_process(hl):
     for n in hl:
         a = n.title()
         a = a.strip()
-        xl +=a +','
+        xl += a + ','
     xl = xl.rstrip(',')
     return xl
 
@@ -194,10 +194,12 @@ def remove_duplicates(values):
             seen.add(value)
     return output
 
-def search_internet(txt):
-    url = "https://www.google.com.tr/search?q={}".format(txt)
-    # b = webbrowser.get('google-chrome')
-    # b.open(url)
-    webbrowser.open(url)
+def search_internet(txt=None):
+    if txt is None:
+        webbrowser.open('''https://www.google.com''')
+    else:
+        url = "https://www.google.com.tr/search?q={}".format(txt)
+        webbrowser.open(url)
+
 if __name__ == '__main__':
     pass

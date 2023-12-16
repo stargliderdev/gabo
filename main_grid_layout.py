@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 import sys
 
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QPushButton, QApplication, QDialog, QInputDialog, \
     QComboBox, QMessageBox, QTreeWidget, QTreeWidgetItem, QTableWidget, QTableWidgetItem
 from PyQt5.Qt import Qt
-import dmPostgreSQL as dbmain
-import ex_grid
+
 import qlib
 import qlib as qc
-import data_access
+import sqlite_crud
 import parameters as gl
 import stdio
 
@@ -19,6 +19,7 @@ class MainGridConfig(QDialog):
         super(MainGridConfig, self).__init__(parent)
         self.toto = False
         self.setWindowTitle('Configurar Grelha')
+        self.setWindowIcon(QIcon('./img/columns.png'))
         masterLayout = QVBoxLayout(self)
         self.textEdit = QLineEdit()
         self.conditionsCbx = QComboBox()
@@ -41,14 +42,14 @@ class MainGridConfig(QDialog):
         # renameBtn.clicked.connect(self.rename_click)
         
         saveBtn = QPushButton('Guarda')
-        self.fix_size(saveBtn)
+        self.fix_size(saveBtn, size= 80)
         saveBtn.clicked.connect(self.save_click)
         
         exitBtn = QPushButton('Sair')
         self.fix_size(exitBtn)
         exitBtn.clicked.connect(self.exit_click)
         
-        masterLayout.addLayout(qc.addHLayout([ saveBtn, exitBtn, True]))
+        masterLayout.addLayout(qc.addHLayout([saveBtn, exitBtn, True]))
         masterLayout.addWidget(self.configGrid)
         self.update_grid()
     
@@ -81,23 +82,23 @@ class MainGridConfig(QDialog):
     def add_click(self):
         text, flag = QInputDialog.getText(None, "Adiciona Estado Fisico:", "", QLineEdit.Normal,'')
         if flag and not text == '':
-            if not dbmain.find_duplicate('conditions', 'condition_name', text):
-                sql = 'INSERT into conditions (condition_name) VALUES (%s);'
-                dbmain.execute_query(sql, (text,))
-                self.update_grid()
-                self.textEdit.clear()
-            else:
-                void = QMessageBox.warning(None, "Erro", 'Estado Fisico Duplicado',
-                                             QMessageBox.StandardButtons(QMessageBox.Close), QMessageBox.Close)
+            # if not dbmain.find_duplicate('conditions', 'condition_name', text):
+            sql = 'INSERT into conditions (condition_name) VALUES (?);'
+            sqlite_crud.execute_query(sql, (text,))
+            self.update_grid()
+            self.textEdit.clear()
+            # else:
+            #     void = QMessageBox.warning(None, "Erro", 'Estado Fisico Duplicado',
+            #                                  QMessageBox.StandardButtons(QMessageBox.Close), QMessageBox.Close)
 
     def delete_click(self):
-        dbmain.execute_query('delete from conditions where condition_name=%s', (self.conditionsList.currentItem().text(0), ))
+        sqlite_crud.execute_query('delete from conditions where condition_name=?', (self.conditionsList.currentItem().text(0), ))
         self.update_grid()
 
     def rename_click(self):
         text, flag = QInputDialog.getText(None, "Altera nome do Estado Fisico:", "", QLineEdit.Normal,'')
         if flag and not text == '':
-            dbmain.execute_query('UPDATE conditions set condition_name=%s WHERE condition_name=%s',
+            sqlite_crud.execute_query('UPDATE conditions set condition_name=? WHERE condition_name=?',
                                  (text,self.conditionsList.currentItem().text(0)))
             self.update_grid()
 
@@ -111,8 +112,8 @@ class MainGridConfig(QDialog):
                     gl.GRID_COLUMN_SIZES.append((n, int(self.configGrid.item(n, 2).text())))
             else:
                 gl.GRID_COLUMN_SIZES.append((n,0))
-        data_access.save_parameters('GRID_COLUMN_SIZES', str(gl.GRID_COLUMN_SIZES))
-        data_access.load_parameters()
+        sqlite_crud.save_parameters('GRID_COLUMN_SIZES', str(gl.GRID_COLUMN_SIZES))
+        sqlite_crud.load_parameters()
         self.toto = True
         self.close()
 
@@ -126,7 +127,7 @@ def main():
     gl.conn_string = "host=" + gl.db_params['db_host'] + ' port=' + gl.db_params['db_port'] + ' dbname=' + gl.db_params[
         'db_database'] + \
                      ' user=' + gl.db_params['db_user'] + ' password=' + gl.db_params['db_password']
-    data_access.load_parameters()
+    sqlite_crud.load_parameters()
     app = QApplication(sys.argv)
     form = MainGridConfig()
     form.show()

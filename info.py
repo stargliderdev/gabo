@@ -16,8 +16,6 @@ from PyQt5.Qt import Qt
 
 
 import parameters as param
-import dmPostgreSQL as dbmain
-# import settings as settings
 
 
 __version__ = '0.0.2'
@@ -93,7 +91,7 @@ class SystemInfo(QDialog):
 
         for g in tables:
             data = (g[1],)
-            a = dbmain.OutputQueryOne('select count(%s) as soma from  ' +  g[0] ,data)
+            a = dbmain.OutputQueryOne('select count(?) as soma from  ' +  g[0] ,data)
             dum = "{0:10d}".format(a.output[0])
             self.textToDisplay.append(('Tabela ',   "{0:<15}".format(g[0])+ dum ))
 

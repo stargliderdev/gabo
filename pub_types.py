@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 import sys
 
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QPushButton, QApplication, QDialog, QInputDialog, \
      QMessageBox, QTreeWidget, QTreeWidgetItem
-import dmPostgreSQL as dbmain
 import qlib as qc
-import data_access
+import sqlite_crud
 import parameters as gl
 import stdio
 
@@ -16,6 +16,7 @@ class TypesBrowser(QDialog):
         super(TypesBrowser, self).__init__(parent)
         # self.resize(600, 400)
         self.setWindowTitle('Tipos de Publicação')
+        self.setWindowIcon(QIcon('./img/pub_types.png'))
         masterLayout = QVBoxLayout(self)
         self.textEdit = QLineEdit()
         self.typesList = QTreeWidget()
@@ -43,7 +44,7 @@ class TypesBrowser(QDialog):
         self.update_combo()
         
     def update_combo(self):
-        data_access.get_types()
+        sqlite_crud.get_types()
         self.typesList.clear()
         self.typesList.setHeaderLabels(["Tipo de Publicação", "Ordem"])
         items = []
@@ -57,9 +58,9 @@ class TypesBrowser(QDialog):
     def add_click(self):
         text, flag = QInputDialog.getText(None, "Adiciona Tipo de Publicação:", "", QLineEdit.Normal,'')
         if flag and not text == '':
-            if not dbmain.find_duplicate('types', 'ty_name', text):
-                sql = 'insert into types (ty_name) VALUES (%s);'
-                dbmain.execute_query(sql, (text,))
+            if not sqlite_crud.find_duplicate('types', 'ty_name', text):
+                sql = 'insert into types (ty_name) VALUES (?);'
+                sqlite_crud.execute_query(sql, (text,))
                 self.update_combo()
                 self.textEdit.clear()
             else:
@@ -67,23 +68,39 @@ class TypesBrowser(QDialog):
                                              QMessageBox.StandardButtons(QMessageBox.Close), QMessageBox.Close)
 
     def delete_click(self):
-        dbmain.execute_query('delete from types where ty_name=%s', (self.typesList.currentItem().text(0), ))
-        self.update_combo()
+        try:
+            self.typesList.currentItem().text(0)
+            sqlite_crud.execute_query('delete from types where ty_name=?', (self.typesList.currentItem().text(0), ))
+            self.update_combo()
+        except AttributeError:
+            pass
+
 
     def rename_click(self):
-        text, flag = QInputDialog.getText(None, "Altera nome do Tipo de Publicação:",
-                                          self.typesList.currentItem().text(0) + ' para:' , QLineEdit.Normal,self.typesList.currentItem().text(0))
-        if flag and not text == '':
-            dbmain.execute_query('update types set ty_name=%s where ty_name=%s',
-                                 (text,self.typesList.currentItem().text(0)))
-            self.update_combo()
+        try:
+
+            old_type = self.typesList.currentItem().text(0)
+            text, flag = QInputDialog.getText(None, "Altera nome do Tipo de Publicação:",
+                                              self.typesList.currentItem().text(0) + ' para:' , QLineEdit.Normal,self.typesList.currentItem().text(0))
+            if flag and not text == '':
+                sqlite_crud.execute_query('delete from types where ty_name=?', (old_type, ))
+                sqlite_crud.execute_query('update types set ty_name=? where ty_name=?',(text,old_type))
+                sqlite_crud.execute_query('update books set pu_type=? where pu_type=?',(text,old_type))
+                self.update_combo()
+        except AttributeError:
+            pass
+
 
     def order_click(self):
-        text, flag = QInputDialog.getText(None, "Altera ordem do Tipo de Publicação:", "", QLineEdit.Normal,'')
-        if flag and not text == '':
-            dbmain.execute_query('update types set ty_order=%s where ty_name=%s',
-                                 (int(text),self.typesList.currentItem().text(0)))
-            self.update_combo()
+        try:
+            self.typesList.currentItem().text(0)
+            text, flag = QInputDialog.getText(None, "Altera ordem do Tipo de Publicação:", "", QLineEdit.Normal,'')
+            if flag and not text == '':
+                sqlite_crud.execute_query('update types set ty_order=? where ty_name=?',
+                                     (int(text),self.typesList.currentItem().text(0)))
+                self.update_combo()
+        except AttributeError:
+            pass
 
     def exit_click(self):
         self.toto = ''
@@ -95,7 +112,7 @@ def main():
     gl.conn_string = "host=" + gl.db_params['db_host'] + ' port=' + gl.db_params['db_port'] + ' dbname=' + gl.db_params[
         'db_database'] + \
                      ' user=' + gl.db_params['db_user'] + ' password=' + gl.db_params['db_password']
-    data_access.get_types()
+    sqlite_crud.get_types()
     app = QApplication(sys.argv)
     form = TypesBrowser()
     form.show()

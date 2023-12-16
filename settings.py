@@ -1,47 +1,187 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-from configobj import ConfigObj
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
-import parameters as param
+import configparser
+import os
 import sys
 
-def load_settings():
-    try:
-        config = ConfigObj('livros.config')
-        param.db_host = config['db_host']
-        param.db_database = config['db_database']
-        param.db_user = config['db_user']
-        param.db_password = config['db_password']
-        dum = config['windowSize']
-        param.windowSize = (int(dum[0]), int(dum[1]))
-        dum = config['windowPos']
-        param.windowPos = (int(dum[0]), int(dum[1]))
-        param.backup_dir = config['backup_dir']
-        return True
-    except Exception as e:
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QTableWidget, QDialog, QApplication, QLabel, QLineEdit, \
+    QFileDialog, QTextEdit, QMessageBox, QInputDialog
+
+import database_init
+import qlib as qc
+import parameters as gl
+import sqlite_crud
+import stdio
+
+class EditGlobalSettings(QDialog):
+    def __init__(self, status_db=True, parent=None):
+        super(EditGlobalSettings, self).__init__(parent)
+        # self.setWindowFlags(Qt.FramelessWindowHint) #|Qt.WindowStaysOnTopHint) #|Qt.WindowTitleHint)
+        self.resize(600, 400)
+        self.setWindowTitle('Settings')
+        self.setWindowIcon(QIcon('./img/settings.png'))
+        gl.STACK_DB_PATH = gl.DB_PATH
+        gl.STACK_DB_NAME = gl.DB_FILE
+        masterLayout = QVBoxLayout(self)
+        self.infoLabel = QLabel()
+        masterLayout.addWidget(self.infoLabel)
+
+        self.databaseLabel = QLabel()
+        # self.databaseEdt = QLineEdit()
+        self.subjectEdit = QLineEdit()
+        self.commentsTextEdit = QTextEdit()
+        masterLayout.addWidget(QLabel('Assunto'))
+        masterLayout.addWidget(self.subjectEdit)
+        masterLayout.addWidget(QLabel('Comentários'))
+        masterLayout.addWidget(self.commentsTextEdit)
+
+        self.createDatabaseBtn = QPushButton('Criar base de dados')
+        self.createDatabaseBtn.clicked.connect(self.create_database)
+        self.setDatabaseBtn = QPushButton('Mudar de Base de Dados')
+        self.setDatabaseBtn.clicked.connect(self.set_database_click)
+        masterLayout.addWidget(self.databaseLabel)
+        masterLayout.addWidget(self.setDatabaseBtn)
+        masterLayout.addWidget(self.createDatabaseBtn)
+        exit_btn = QPushButton('Sair')
+        exit_btn.clicked.connect(self.exit_click)
+
+        valid_btn = QPushButton('Valida')
+        valid_btn.clicked.connect(self.valid_click)
+
+        masterLayout.addLayout(qc.addHLayout([valid_btn, exit_btn]))
+        if status_db:
+            load_settings()
+            self.databaseLabel.setText(gl.DB_PATH + gl.DB_FILE)
+            self.commentsTextEdit.setText('')
+        else:
+            self.infoLabel.setText('Não foi encontrada nenhuma Base de Dados!')
+
+    def valid_click(self):
+        save_settings()
+        sql = 'update params set param_data=? where param_data=? '
+        sqlite_crud.execute_query(sql, (self.commentsTextEdit.toPlainText(), ''))
+        sql = 'update params set param_data=? where param_data=? '
+        sqlite_crud.execute_query(sql, (self.subjectEdit.text(), ''))
+
+        self.close()
+
+    def set_database_click(self):
+        options = QFileDialog.Options()
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open File",
+                                                   gl.DB_PATH, "DB Files (*.sqlite3);;All Files (*.*)",
+                                                   options=options)
+        if file_name:
+            gl.DB_PATH, gl.DB_FILE = os.path.split(file_name)
+            gl.DB_PATH = gl.DB_PATH + '/'
+            i = db_info()
+            # load_settings()
+            database_init.updater()
+            self.commentsTextEdit.setText(i)
+
+    def create_database(self):
+        gl.DOCUMENTS_DIR = os.path.expanduser('~\\Documents')
+        options = QFileDialog.Options()
+        options |= QFileDialog.ShowDirsOnly
+        directory = QFileDialog.getExistingDirectory(self, 'Pasta', gl.DOCUMENTS_DIR, options=options)
+        flag = False
+        if directory:
+            text, ok = QInputDialog.getText(self, 'Nome do Ficheiro', 'Nome da Base de Dados:')
+            if ok:
+                gl.DB_PATH = directory + '/'
+                text = text.replace(' ', '_')
+                gl.DB_FILE = text.replace('.', '_') + '.sqlite3'
+                if stdio.file_ok(gl.DB_PATH + gl.DB_FILE):
+                    ask = QMessageBox.warning(None,
+                                           "Duplicado",
+                                           """Atenção\n estabase de dados já existe! \nEscrever por cima? """,
+                                           QMessageBox.StandardButtons(QMessageBox.Cancel | QMessageBox.Yes),
+                                           QMessageBox.Cancel)
+                    if ask == QMessageBox.Yes:
+                        flag = True
+                else:
+                    flag = True
+
+        if flag :
+            gl.DB_PATH = directory + '/'
+            text = text.replace(' ', '_')
+            gl.DB_FILE = text.replace('.', '_') + '.sqlite3'
+            gl.DB_VERSION = 0
+            database_init.updater()
+            void = QMessageBox.warning(None, "Sucesso", 'A Base de Dados<br> <b>' + gl.DB_FILE + '</b> <br>foi criada!\nem ' + gl.DB_PATH,
+                                             QMessageBox.StandardButtons(QMessageBox.Close), QMessageBox.Close)
+            save_settings()
+            i = db_info()
+        else:
+            void = QMessageBox.warning(None, "Erro", 'A Base de Dados não foi criada!',
+                                                 QMessageBox.StandardButtons(QMessageBox.Close), QMessageBox.Close)
+
+    def exit_click(self):
+        gl.DB_PATH = gl.STACK_DB_PATH
+        gl.DB_FILE = gl.STACK_DB_NAME
+        self.close()
 
 
-        print('Erro ao carregar settings',  e)
-        return False
+def db_info():
+    sql = '''select 'Livros' as a, count(pu_id) as t from books
+             union
+             select 'Autores' as a, count(au_id) as t from authors
+             union
+             select 'Tipos' as a, count(ty_id) as t from  types
+             union
+             select 'Etiquetas' as a, count(ta_id) as t from  tags
+             union
+             select 'Locais' as a, count(local_id) as t from locals '''
 
-def save_init_settings():
-    config = ConfigObj()
-    config.filename = '../etc/livros.config'
-    config['db_host'] = '192.168.0.102'
-    config['db_database'] ='livros'
-    config['db_user'] = 'sysdba'
-    config['db_password'] = 'masterkey'
-    config.write()
+    dum = sqlite_crud.query_many(sql)
+    text = ''
+    for n in dum:
+        text += n[0] + ' : ' + str(n[1]) + '\n'
+    sql = '''select param_name,param_data from params where param_level = 1; '''
+    dum = sqlite_crud.query_many(sql)
+    for n in dum:
+        text += n[0] + ' : ' + str(n[1]) + '\n'
+    return text
+
+
 
 def save_settings():
-    config = ConfigObj()
-    config.filename = '../etc/livros.config'
-    config['db_host'] = param.path_artigos
-    config['db_file'] = param.path_familias
-    config.write()
+    config = configparser.ConfigParser()
+    config["last_db"] = {
+        "path": gl.DB_PATH + '/',
+        "file": gl.DB_FILE
+    }
+    config["main_window"] = {
+        "x": "42",
+        "y": "42",
+        "w": "42",
+        "h": "42",
+    }
+    file_path = "config.ini"
+    with open(file_path, "w") as ini_file:
+        config.write(ini_file)
 
-if __name__ == "__main__": 
-    save_init_settings()
+
+def load_settings():
+    config = configparser.ConfigParser()
+    file_path = "config.ini"
+    if stdio.file_ok(file_path):
+        config.read(file_path)
+        gl.DB_PATH = config.get("last_db", "path")
+        gl.DB_FILE = config.get("last_db", "file")
+        return True
+    else:
+        print('Database not set')
+        return False
+
+
+def main():
+    app = QApplication(sys.argv)
+    form = EditGlobalSettings()
+    form.show()
+    app.exec_()
+
+
+if __name__ == '__main__':
+    load_settings()
+    main()

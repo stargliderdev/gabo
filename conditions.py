@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 import sys
 
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QPushButton, QApplication, QDialog, QInputDialog, \
     QComboBox, QMessageBox, QTreeWidget, QTreeWidgetItem
-import dmPostgreSQL as dbmain
+
 import qlib as qc
-import data_access
+import sqlite_crud
 import parameters as gl
 import stdio
 
@@ -15,6 +16,7 @@ class ConditionsBrowser(QDialog):
     def __init__(self,  parent = None):
         super(ConditionsBrowser,  self).__init__(parent)
         self.setWindowTitle('Estado Fisico')
+        self.setWindowIcon(QIcon('./img/conditions.png'))
         masterLayout = QVBoxLayout(self)
         self.textEdit = QLineEdit()
         self.conditionsCbx = QComboBox()
@@ -43,7 +45,7 @@ class ConditionsBrowser(QDialog):
         self.update_combo()
         
     def update_combo(self):
-        data_access.get_conditions()
+        sqlite_crud.get_conditions()
         self.conditionsList.clear()
         self.conditionsList.setHeaderLabels(["Estado Fisico", "Ordem"])
         items = []
@@ -55,48 +57,53 @@ class ConditionsBrowser(QDialog):
     def add_click(self):
         text, flag = QInputDialog.getText(None, "Adiciona Estado Fisico:", "", QLineEdit.Normal,'')
         if flag and not text == '':
-            if not dbmain.find_duplicate('conditions', 'condition_name', text):
-                sql = 'INSERT into conditions (condition_name) VALUES (%s);'
-                dbmain.execute_query(sql, (text,))
-                self.update_combo()
-                self.textEdit.clear()
-            else:
-                void = QMessageBox.warning(None, "Erro", 'Estado Fisico Duplicado',
-                                             QMessageBox.StandardButtons(QMessageBox.Close), QMessageBox.Close)
+            # if not sqlite_crud.find_duplicate('conditions', 'condition_name', text):
+            sql = 'INSERT into conditions (condition_name) VALUES (?);'
+            sqlite_crud.execute_query(sql, (text,))
+            self.update_combo()
+            self.textEdit.clear()
+            # else:
+            #     void = QMessageBox.warning(None, "Erro", 'Estado Fisico Duplicado',
+            #                                  QMessageBox.StandardButtons(QMessageBox.Close), QMessageBox.Close)
 
     def delete_click(self):
-        dbmain.execute_query('delete from conditions where condition_name=%s', (self.conditionsList.currentItem().text(0), ))
-        self.update_combo()
+        try:
+            self.conditionsList.currentItem().text(0)
+            sqlite_crud.execute_query('delete from conditions where condition_name=?', (self.conditionsList.currentItem().text(0), ))
+            self.update_combo()
+        except AttributeError:
+            pass
 
     def rename_click(self):
-        text, flag = QInputDialog.getText(None, "Altera nome do Estado Fisico:", self.conditionsList.currentItem().text(0) +"para:", QLineEdit.Normal,self.conditionsList.currentItem().text(0))
-        if flag and not text == '':
-            dbmain.execute_query('UPDATE conditions set condition_name=%s WHERE condition_name=%s',
-                                 (text,self.conditionsList.currentItem().text(0)))
-            self.update_combo()
+        try:
+            old_text = self.conditionsList.currentItem().text(0)
+            text, flag = QInputDialog.getText(None, "Altera nome do Estado Fisico:", self.conditionsList.currentItem().text(0) +"para:", QLineEdit.Normal,self.conditionsList.currentItem().text(0))
+            if flag and not text == '':
+                sqlite_crud.execute_query('DELETE FROM conditions WHERE condition_name=?', old_text)
+                sqlite_crud.execute_query('UPDATE conditions SET condition_name=? WHERE condition_name=?',
+                                          (text, old_text))
+                self.update_combo()
+        except AttributeError:
+            pass
 
     def order_click(self):
-        text, flag = QInputDialog.getText(None, "Altera ordem do Estado Fisico:", "", QLineEdit.Normal,'')
-        if flag and not text == '':
-            dbmain.execute_query('UPDATE conditions set condition_order=%s where condition_name=%s',
-                                 (int(text),self.conditionsList.currentItem().text(0)))
-            self.update_combo()
-
+        try:
+            self.conditionsList.currentItem().text(0)
+            text, flag = QInputDialog.getText(None, "Altera ordem do Estado Fisico:", "", QLineEdit.Normal,'')
+            if flag and not text == '':
+                sqlite_crud.execute_query('UPDATE conditions set condition_order=? where condition_name=?',
+                                     (int(text),self.conditionsList.currentItem().text(0)))
+                self.update_combo()
+        except AttributeError:
+            pass
+        
     def exit_click(self):
         self.toto = ''
         self.close()
 
 
 def main():
-    gl.db_params = stdio.read_config_file('gabo.ini')
-    gl.conn_string = "host=" + gl.db_params['db_host'] + ' port=' + gl.db_params['db_port'] + ' dbname=' + gl.db_params[
-        'db_database'] + \
-                     ' user=' + gl.db_params['db_user'] + ' password=' + gl.db_params['db_password']
-    data_access.get_conditions()
-    app = QApplication(sys.argv)
-    form = ConditionsBrowser()
-    form.show()
-    app.exec_()
+    pass
 
 if __name__ == '__main__':
     main()

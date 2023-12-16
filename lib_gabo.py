@@ -1,7 +1,7 @@
 import sys
 
 import parameters as gl
-import dmPostgreSQL as dbmain
+import sqlite_crud
 
 
 def calc_width_in_filter():
@@ -18,7 +18,7 @@ def calc_width_in_filter():
         sql = '''select ta_name
             from tags_reference
             inner join tags on ta_id = tags_ref_tag_id
-            where tags_ref_key ='DIM' and tags_ref_book =%s'''
+            where tags_ref_key ='DIM' and tags_ref_book =?'''
         bc = dbmain.query_one(sql, (n[0],))
         if bc is None:
             no_dimensions += 1
@@ -59,7 +59,7 @@ def calc_width_in_filter():
 #     for n in xl:
 #         publication_ids.append(str(n[0]))
 #     in_list = ','.join(publication_ids)
-#     sql = '''select pu_id,livros.pu_title,'-',ta_name, '1',livros.pu_ed_year, livros.pu_cota,
+#     sql = '''select pu_id,livros.pu_title,'-',ta_name, '1',livros.pu_year, livros.pu_local,
 #        SPLIT_PART(ta_name, 'x', 1) as l,
 #        SPLIT_PART(ta_name, 'x', 2) as h,
 #        SPLIT_PART(ta_name, 'x', 3)as d,
@@ -98,7 +98,7 @@ def calc_width_in_filter():
 
 # def make_sql(what='', where_index='nada', sort_by=''):
 #     gl.CURRENT_SQL = ''
-#     select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_cota,livros.pu_volume, pu_ed_year,pu_cota_new FROM livros, authors, types, status"
+#     select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.st_nome,livros.pu_local,livros.pu_volume, pu_year,pu_local_new from books, authors, types, status"
 #     join_ = " livros.pu_status = status.st_id AND authors.au_id = livros.pu_author_id AND types.ty_id = livros.pu_type "
 #     where_ = ' WHERE '
 #     order_ = ''
@@ -109,7 +109,7 @@ def calc_width_in_filter():
 #     if not what == '':
 #         self.recordLimitEdt.setText('0')
 #         # self.key_search = self.sort_dic[where_index]
-#         if where_index == 'local':  # na cota tem de ser exactamente igual
+#         if where_index == 'local':  # na local tem de ser exactamente igual
 #             self.key_search = self.sort_dic['local']
 #             text_to_search = "\'" + what.lower().strip() + "\'"
 #         else:
@@ -181,11 +181,12 @@ def calc_width_in_filter():
 
 def make_sql(command_dict):
     gl.CURRENT_SQL = ''
-    select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.status_name,livros.pu_cota,livros.pu_volume," \
-              " pu_ed_year, pu_edition, pu_volume_series,pu_volume_collection, pu_price,pu_copy_number FROM livros "
-    join_ = ''' inner join authors on au_id=pu_author_id
-                   inner join types on ty_id=livros.pu_type
-                   inner join status on status_id=pu_status'''
+    select_ = "SELECT pu_id, pu_title, pu_author, pu_type, pu_status,pu_local,pu_volume," \
+              " pu_year, pu_edition, pu_volume_serie,pu_volume_collection, pu_price,pu_copy_number from books "
+    join_ = ''
+    # join_ = ''' inner join authors on au_id=pu_author_id
+    #                inner join types on ty_id=livros.pu_type
+    #                inner join status on status_id=pu_status'''
     where_ = []
     order_by = ''
     limit = ''
@@ -198,14 +199,14 @@ def make_sql(command_dict):
         if gl.SEARCH_DICT['WHERE'] == 'author':
             if not command_dict['WHAT'] == '':
                 text_to_search = "\'%" + command_dict['WHAT'].lower().strip() + "%\'"
-                where_.append('''unaccent(lower(authors.au_name)) LIKE  unaccent(''' + text_to_search + ''')''')
+                where_.append('''lower(pu_author) LIKE  ''' + text_to_search + '''''')
         elif gl.SEARCH_DICT['WHERE'] == 'local':
             text_to_search = "\'" + command_dict['WHAT'].lower().strip() + "\'"
-            where_.append('''(lower(pu_cota)) LIKE  ''' + text_to_search)
+            where_.append('''(lower(pu_local)) LIKE  ''' + text_to_search)
         
         elif gl.SEARCH_DICT['WHERE'] == 'title':
             text_to_search = "\'%" + command_dict['WHAT'].lower().strip() + "%\'"
-            where_.append('''unaccent(lower(pu_title)) LIKE  unaccent(''' + text_to_search + ''') ''')
+            where_.append('''(lower(pu_title)) LIKE (''' + text_to_search + ''') ''')
         elif gl.SEARCH_DICT['WHERE'] == 'isbn':
             text_to_search = "\'%" + command_dict['WHAT'].lower().strip() + "%\'"
             where_.append('''pu_isbn LIKE  ''' + text_to_search)
@@ -214,27 +215,32 @@ def make_sql(command_dict):
             for n in gl.SEARCH_DICT['WHAT'].lower().split(','):
                 text_to_search += '\'' + n + '\'' + ','
             text_to_search = text_to_search[:-1]
-            where_.append("pu_id in (select tags_ref_book from tags_reference "
-                          "where tags_ref_tag_id in (select ta_id from tags where ta_name in (" + text_to_search + ")))")
+            where_.append('''pu_id in (select tags_ref_book from tags_reference 
+                          where tags_ref_key in (select ta_name from tags where ta_name in (''' + text_to_search + ''')))''')
+            # where_.append("pu_id in (select tags_ref_book from tags_reference "
+            #               "where tags_ref_tag_id in (select ta_id from tags where ta_name in (" + text_to_search + ")))")
+        elif gl.SEARCH_DICT['WHERE'] == 'collection':
+            text_to_search = "\'%" + command_dict['WHAT'].lower().strip() + "%\'"
+            where_.append('''pu_collection LIKE  ''' + text_to_search)
+        elif gl.SEARCH_DICT['WHERE'] == 'serie':
+            text_to_search = "\'%" + command_dict['WHAT'].lower().strip() + "%\'"
+            where_.append('''pu_serie LIKE  ''' + text_to_search)
         """ generic filter  v1 """
         if gl.SEARCH_DICT['TYPE'] == '':
             pass
         else:
-            where_.append(" livros.pu_type = (select ty_id from types where lower(ty_name) like \'" + gl.SEARCH_DICT['TYPE'].lower() + '\')')
+            where_.append(" pu_type = \'" + gl.SEARCH_DICT['TYPE'] + '\'')
         if gl.SEARCH_DICT['STATUS'] == '':
             pass
         else:
-            where_.append(" livros.pu_status = (select status_id from status where lower(status_name) like \'" + gl.SEARCH_DICT['STATUS'].lower() + '\')')
+            where_.append(" pu_status = \'" + gl.SEARCH_DICT['STATUS'] + '\'')
     if gl.SEARCH_DICT['ORDER'] == '':
         order_by = ' order by pu_id DESC '
     else:
         order_by = ' order by ' + gl.SEARCH_DICT['ORDER'] + ' ' + gl.SEARCH_DICT['ORDER_BY']
     sql = select_ + join_ + create_sql_where(where_) + order_by + limit
     gl.CURRENT_SQL = sql
-    print('DEBUG')
-    print(sql)
-    print('END DEBUG')
-
+    
     return sql
 
 
@@ -245,7 +251,7 @@ def make_sql(command_dict):
 #     print('------end debug-------')
 #
 #     gl.CURRENT_SQL = ''
-#     select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.status_name,livros.pu_cota,livros.pu_volume, pu_ed_year, pu_cota_new FROM livros "
+#     select_ = "SELECT livros.pu_id, livros.pu_title, authors.au_name, types.ty_name, status.status_name,livros.pu_local,livros.pu_volume, pu_year, pu_local_new from books "
 #     join_ = ''' inner join authors on au_id=pu_author_id
 #                    inner join types on ty_id=livros.pu_type
 #                    inner join status on status_id=pu_status'''
@@ -267,6 +273,31 @@ def create_sql_where(input_list):
         output_sql += ' AND '.join(input_list)
     return output_sql
 
+
+
+def load_parameters():
+    a = sqlite_crud.query_many('select * from params')
+    for n in a:
+        if n[0] == 'LAST_TAGS':
+            toto = n[1].rstrip(',')
+            dum = toto.split(',')
+            for f in dum:
+                gl.last_tags.append(f)
+            gl.last_tags = gl.last_tags[: len(gl.last_tags) - (len(gl.last_tags) - 10)]
+        elif n[0] == 'SHOW_RECORDS':
+            gl.SHOW_RECORDS = n[1]
+        elif n[0] == 'OWNER':
+            gl.OWNER = n[1]
+        elif n[0] == 'LAST_STATUS':
+            gl.LAST_STATUS = n[1]
+        elif n[0] == 'LAST_BINDING':
+            gl.LAST_BINDING = n[1]
+        elif n[0] == 'LAST_LANGUAGE':
+            gl.LAST_LANGUAGE = n[1]
+        elif n[0] == 'LAST_PUB_TYPE':
+            gl.LAST_PUB_TYPE = n[1]
+        elif n[0] == 'GRID_COLUMN_SIZES':
+            gl.GRID_COLUMN_SIZES = eval(n[1])
 
 if __name__ == '__main__':
     pass

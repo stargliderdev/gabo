@@ -4,9 +4,9 @@ import sys
 
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QPushButton, QApplication, QDialog, QInputDialog, \
      QTreeWidget, QTreeWidgetItem
-import dmPostgreSQL as dbmain
+
 import qlib as qc
-import data_access
+import sqlite_crud
 import parameters as gl
 import stdio
 
@@ -34,7 +34,7 @@ class SourceBrowser(QDialog):
         self.update_combo()
         
     def update_combo(self):
-        data_access.get_sources()
+        sqlite_crud.get_sources()
         self.sourceList.clear()
         self.sourceList.setHeaderLabels(["Origem"])
         items = []
@@ -46,7 +46,7 @@ class SourceBrowser(QDialog):
     def rename_click(self):
         text, flag = QInputDialog.getText(None, "Altera nome da Origem:", self.sourceList.currentItem().text(0) + ' para :', QLineEdit.Normal,self.sourceList.currentItem().text(0))
         if flag and not text == '':
-            dbmain.execute_query("UPDATE livros set pu_source=%s WHERE pu_source=%s;",
+            sqlite_crud.execute_query("UPDATE livros set pu_source=? WHERE pu_source=?;",
                                  (text,self.sourceList.currentItem().text(0)))
             self.update_combo()
 

@@ -1,10 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QVBoxLayout, QLineEdit, QTableWidget, QPushButton, QDialog, QMessageBox
 
 import ex_grid
-import dmPostgreSQL as dbmain
+
 import qlib as qc
+import sqlite_crud
 
 
 class BrowserLocals(QDialog):
@@ -12,6 +14,7 @@ class BrowserLocals(QDialog):
         super(BrowserLocals,  self).__init__(parent)
         self.resize(600, 400)
         self.setWindowTitle('Locais')
+        self.setWindowIcon(QIcon('./img/locals.png'))
         self.toto = ''
         masterLayout = QVBoxLayout(self)
         self.grid = QTableWidget()
@@ -31,32 +34,32 @@ class BrowserLocals(QDialog):
         exit_btn.clicked.connect(self.exit_click)
         valid_btn=QPushButton('Valida')
         valid_btn.clicked.connect(self.valid_click)
-        masterLayout.addLayout(qc.addHLayout(['Da cota:', self.fromEdt, 'Para a cota:', self.toEdt, changeBtn]))
+        masterLayout.addLayout(qc.addHLayout(['Do local:', self.fromEdt, 'Para o local:', self.toEdt, changeBtn]))
         masterLayout.addLayout(qc.addHLayout([valid_btn,exit_btn]))
 
         self.grid_refresh()
 
     def change_locals_click(self):
         # check souce local exists
-        sql = '''select count(pu_cota) from livros where pu_cota = %s'''
-       
-        a = dbmain.query_one(sql, (self.fromEdt.text().upper(),))
-        flag = True
-        if not a[0] > 0:
-            b = QMessageBox.question(
-                self,
-                self.tr("Cota inistente"),
-                self.tr("""A Cota de origem não existe!
-            Continuar?"""),
+        source = self.fromEdt.text().upper()
+        target = self.toEdt.text().upper().replace(' ', '')
+        # sql = '''select count(pu_local) from books where pu_local = ?'''
+        b = QMessageBox.question(self,
+                self.tr("Alterar Localização"),
+                '''Vou alterar a Localização das Publicações\n''' + '''do local ''' + source + ''' para o local''' + target,
                 QMessageBox.StandardButtons(
                     QMessageBox.No |
                     QMessageBox.Yes),
                 QMessageBox.No)
-            if b == QMessageBox.No:
-                flag == False
-        if flag:
-            sql = '''UPDATE livros set pu_cota=%s where pu_cota=%s'''
-            dbmain.execute_query(sql, ( self.toEdt.text().upper(),self.fromEdt.text().upper()))
+        if b == QMessageBox.No:
+            pass
+        else:
+            sql = '''select count(pu_local) from books where upper(pu_local) = ''' + '''\'''' + source + '''\''''
+            total_changed = sqlite_crud.query_many(sql)[0][0]
+            sql = '''UPDATE books set pu_local=? where pu_local=?'''
+            sqlite_crud.execute_query(sql, (target, source))
+            QMessageBox.information(None, 'Alterado o local' , 'Foram alterados o local em ' + str(total_changed) + ' publicações.' ,
+                                   QMessageBox.StandardButtons(QMessageBox.Cancel |QMessageBox.Ok), QMessageBox.Ok)
             self.grid_refresh()
 
     def valid_click(self):
@@ -64,12 +67,12 @@ class BrowserLocals(QDialog):
         self.close()
 
     def grid_refresh(self):
-        sql = '''select pu_cota, count(pu_cota)
-                  from livros
-            group by pu_cota
-            order by pu_cota'''
-        dataset = dbmain.query_many(sql)
-        ex_grid.ex_grid_update (self.grid, {0:['Cota', 's'],1:['Livros','i']}, dataset)
+        sql = '''select pu_local, count(pu_local)
+                  from books
+            group by pu_local
+            order by pu_local'''
+        dataset = sqlite_crud.query_many(sql)
+        ex_grid.ex_grid_update (self.grid, {0:['local', 's'],1:['Livros','i']}, dataset)
         self.grid.setColumnWidth(0, 200)
         self.grid.setColumnWidth(1, 60)
 
