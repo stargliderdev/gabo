@@ -409,6 +409,9 @@ def update_3():
     write_script('''INSERT INTO words ( word_value) VALUES ('XX');''')
     write_script('''INSERT INTO words ( word_value) VALUES ('ZX');''')
     write_script('''update params set param_data='3' where param_key='DB_VERSION';''')
+
+def update_4():
+    write_script('''update params set param_data='4' where param_key='DB_VERSION';''')
     write_script('''INSERT INTO params (param_key, param_data, param_name, param_level) VALUES ('DIR_BACK', null, 'Local para guardar o backup', 2);''')
     write_script('''INSERT INTO params (param_key, param_data, param_name, param_level) VALUES ('BACKUP_FLAG', 'False', 'Flag da base de dados alterada', 0);''')
 
@@ -438,6 +441,7 @@ def updater():
     if gl.DB_VERSION == 0: update_1()
     if gl.DB_VERSION == 1: update_2()
     if gl.DB_VERSION == 2: update_3()
+    if gl.DB_VERSION == 3: update_4()
 
 if __name__ == '__main__':
     # file_path='/home/zorze/python/books/databases/'

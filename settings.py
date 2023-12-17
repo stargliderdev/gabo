@@ -6,7 +6,7 @@ import sys
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QPushButton, QVBoxLayout, QTableWidget, QDialog, QApplication, QLabel, QLineEdit, \
-    QFileDialog, QTextEdit, QMessageBox, QInputDialog
+    QFileDialog, QTextEdit, QMessageBox, QInputDialog, QTabWidget, QWidget
 
 import database_init
 import qlib as qc
@@ -19,43 +19,63 @@ class EditGlobalSettings(QDialog):
         super(EditGlobalSettings, self).__init__(parent)
         # self.setWindowFlags(Qt.FramelessWindowHint) #|Qt.WindowStaysOnTopHint) #|Qt.WindowTitleHint)
         self.resize(600, 400)
-        self.setWindowTitle('Settings')
+        self.setWindowTitle('Configuração')
         self.setWindowIcon(QIcon('./img/settings.png'))
         gl.STACK_DB_PATH = gl.DB_PATH
         gl.STACK_DB_NAME = gl.DB_FILE
-        masterLayout = QVBoxLayout(self)
-        self.infoLabel = QLabel()
-        masterLayout.addWidget(self.infoLabel)
+        self.status_db = status_db
+        mainLayout = QVBoxLayout(self)
+        self.tabuladorTabWidget = QTabWidget()
+        self.make_db_tab()
+        self.make_settings_tab()
+        self.tabuladorTabWidget.addTab(self.tabDatabase, 'Base de dados')
+        self.tabuladorTabWidget.addTab(self.tabSettings, 'Configurações')
+        mainLayout.addWidget(self.tabuladorTabWidget)
 
+        self.tabuladorTabWidget.addTab(self.tabDatabase, 'Principal')
+        self.tabuladorTabWidget.addTab(self.tabSettings, 'Outros')
+
+    def make_settings_tab(self):
+        self.tabSettings = QWidget()
+        settingsLayout = QVBoxLayout(self.tabSettings)
+        dumLayout = QVBoxLayout()
+        settingsLayout.addLayout(dumLayout)
+
+    def make_db_tab(self):
+        self.tabDatabase = QWidget()
+        databaseLayout = QVBoxLayout(self.tabDatabase)
+        dumLayout= QVBoxLayout()
+        self.infoLabel = QLabel()
+        dumLayout.addWidget(self.infoLabel)
         self.databaseLabel = QLabel()
         # self.databaseEdt = QLineEdit()
         self.subjectEdit = QLineEdit()
         self.commentsTextEdit = QTextEdit()
-        masterLayout.addWidget(QLabel('Assunto'))
-        masterLayout.addWidget(self.subjectEdit)
-        masterLayout.addWidget(QLabel('Comentários'))
-        masterLayout.addWidget(self.commentsTextEdit)
-
+        dumLayout.addWidget(QLabel('Assunto'))
+        dumLayout.addWidget(self.subjectEdit)
+        dumLayout.addWidget(QLabel('Comentários'))
+        dumLayout.addWidget(self.commentsTextEdit)
         self.createDatabaseBtn = QPushButton('Criar base de dados')
         self.createDatabaseBtn.clicked.connect(self.create_database)
         self.setDatabaseBtn = QPushButton('Mudar de Base de Dados')
         self.setDatabaseBtn.clicked.connect(self.set_database_click)
-        masterLayout.addWidget(self.databaseLabel)
-        masterLayout.addWidget(self.setDatabaseBtn)
-        masterLayout.addWidget(self.createDatabaseBtn)
+        dumLayout.addWidget(self.databaseLabel)
+        dumLayout.addWidget(self.setDatabaseBtn)
+        dumLayout.addWidget(self.createDatabaseBtn)
         exit_btn = QPushButton('Sair')
         exit_btn.clicked.connect(self.exit_click)
 
         valid_btn = QPushButton('Valida')
         valid_btn.clicked.connect(self.valid_click)
 
-        masterLayout.addLayout(qc.addHLayout([valid_btn, exit_btn]))
-        if status_db:
+        dumLayout.addLayout(qc.addHLayout([valid_btn, exit_btn]))
+        if self.status_db:
             load_settings()
             self.databaseLabel.setText(gl.DB_PATH + gl.DB_FILE)
             self.commentsTextEdit.setText('')
         else:
             self.infoLabel.setText('Não foi encontrada nenhuma Base de Dados!')
+        databaseLayout.addLayout(dumLayout)
 
     def valid_click(self):
         save_settings()
@@ -63,7 +83,6 @@ class EditGlobalSettings(QDialog):
         sqlite_crud.execute_query(sql, (self.commentsTextEdit.toPlainText(), ''))
         sql = 'update params set param_data=? where param_data=? '
         sqlite_crud.execute_query(sql, (self.subjectEdit.text(), ''))
-
         self.close()
 
     def set_database_click(self):
