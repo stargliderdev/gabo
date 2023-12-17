@@ -409,6 +409,8 @@ def update_3():
     write_script('''INSERT INTO words ( word_value) VALUES ('XX');''')
     write_script('''INSERT INTO words ( word_value) VALUES ('ZX');''')
     write_script('''update params set param_data='3' where param_key='DB_VERSION';''')
+    write_script('''INSERT INTO params (param_key, param_data, param_name, param_level) VALUES ('DIR_BACK', null, 'Local para guardar o backup', 2);''')
+    write_script('''INSERT INTO params (param_key, param_data, param_name, param_level) VALUES ('BACKUP_FLAG', 'False', 'Flag da base de dados alterada', 0);''')
 
 def write_script(sql, silent=True):
     conn = sqlite3.connect(gl.DB_PATH + gl.DB_FILE, uri=True)
